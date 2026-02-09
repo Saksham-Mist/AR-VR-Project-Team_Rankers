@@ -7,3 +7,8 @@ Daivik Pathak - 102315210
 Shourya Kapoor - 102315231
 
 All of it being headed by Dr. Raghav B. Venkataramaiyer
+
+Week 1 updates : 
+Daivik - https://open.substack.com/pub/daivikpathak/p/vr-based-geometric-transformation?r=7hs6n0&utm_medium=ios&utm_source=post-publish
+Shourya - https://open.substack.com/pub/shouryakapoor/p/avr-project?utm_source=share&utm_medium=android&r=7hs6ir
+Saksham - https://open.substack.com/pub/sakshamsharma880460/p/the-very-first-step?utm_source=share&utm_medium=android&r=6wp7v9
