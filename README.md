@@ -138,7 +138,7 @@ Under the guidance of **Dr. Raghav B. Venkataramaiyer**
 ## Project Proposal
 
 Full proposal document available here:  
-[View Proposal](Proposal/VR_Proposal_Mock_1 (1).pdf)
+[View Proposal](Proposal/VR_Proposal_Mock_1.pdf)
 
 ---
 
