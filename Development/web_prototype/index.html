@@ -1,1 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>3D Transformation Visualizer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
 
+<body style="margin:0; font-family: Arial;">
+
+<div style="display:flex; height:100vh;">
+
+  <div id="scene" style="flex:3;"></div>
+
+  <div style="flex:1; padding:20px; background:#f5f5f5;">
+    <h2>Translation Controls</h2>
+
+    <label>X:
+      <input type="range" id="tx" min="-5" max="5" step="0.1" value="0">
+    </label><br><br>
+
+    <label>Y:
+      <input type="range" id="ty" min="-5" max="5" step="0.1" value="0">
+    </label><br><br>
+
+    <label>Z:
+      <input type="range" id="tz" min="-5" max="5" step="0.1" value="0">
+    </label>
+
+
+    <br><br>
+    <h2>Rotation Controls</h2>
+
+    <label>Rotate X:
+    <input type="range" id="rx" min="0" max="360" value="0">
+    </label><br><br>
+
+    <label>Rotate Y:
+    <input type="range" id="ry" min="0" max="360" value="0">
+    </label><br><br>
+
+    <label>Rotate Z:
+    <input type="range" id="rz" min="0" max="360" value="0">
+    </label>
+
+
+    <br><br>
+    <h3>Transformation Matrix</h3>
+    <pre id="matrixDisplay" style="background:white; padding:10px; font-size:12px;"></pre>
+
+  </div>
+</div>
+
+<script>
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(window.innerWidth * 0.75, window.innerHeight);
+  document.getElementById("scene").appendChild(renderer.domElement);
+
+  const geometry = new THREE.BoxGeometry();
+  const material = new THREE.MeshNormalMaterial();
+  const cube = new THREE.Mesh(geometry, material);
+  scene.add(cube);
+
+  const axesHelper = new THREE.AxesHelper(5);
+  scene.add(axesHelper);
+
+  camera.position.set(4,4,6);
+  camera.lookAt(0,0,0);
+
+  function updateTranslation() {
+  const tx = parseFloat(document.getElementById("tx").value);
+  const ty = parseFloat(document.getElementById("ty").value);
+  const tz = parseFloat(document.getElementById("tz").value);
+
+  const rx = THREE.MathUtils.degToRad(parseFloat(document.getElementById("rx").value));
+  const ry = THREE.MathUtils.degToRad(parseFloat(document.getElementById("ry").value));
+  const rz = THREE.MathUtils.degToRad(parseFloat(document.getElementById("rz").value));
+
+  cube.position.set(tx, ty, tz);
+  cube.rotation.set(rx, ry, rz);
+
+  cube.updateMatrix();
+  const m = cube.matrix.elements;
+
+  let matrixText = "";
+  for (let i = 0; i < 4; i++) {
+    matrixText += 
+      m[i].toFixed(2) + "   " +
+      m[i+4].toFixed(2) + "   " +
+      m[i+8].toFixed(2) + "   " +
+      m[i+12].toFixed(2) + "\n";
+  }
+
+  document.getElementById("matrixDisplay").textContent = matrixText;
+}
+
+
+
+  document.getElementById("tx").addEventListener("input", updateTranslation);
+  document.getElementById("ty").addEventListener("input", updateTranslation);
+  document.getElementById("tz").addEventListener("input", updateTranslation);
+  document.getElementById("rx").addEventListener("input", updateTranslation);
+  document.getElementById("ry").addEventListener("input", updateTranslation);
+  document.getElementById("rz").addEventListener("input", updateTranslation);
+
+
+  function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+  }
+
+  animate();
+  updateTranslation();
+</script>
+
+</body>
+</html>
