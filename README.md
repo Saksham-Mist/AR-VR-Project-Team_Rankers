@@ -125,6 +125,34 @@ The system consists of three core modules:
 
 ---
 
+---
+
+## Web-Based Prototype (Phase 1 Implementation)
+
+To validate our concept before moving into full Unity development, we created a lightweight web-based 3D transformation prototype.
+
+This prototype demonstrates:
+
+- Real-time 3D cube visualization
+- Translation along X, Y, Z axes
+- Rotation along X, Y, Z axes
+- Live transformation matrix updates
+
+This directly supports our goal of improving understanding of geometric transformations by visualizing them in 3D instead of static 2D diagrams.
+
+### Default View
+![Default View](Assets/Screenshots/Default_view.png)
+
+### Translation Example
+![Translation Example](Assets/Screenshots/Translational_view_example.png)
+
+### Rotation Example
+![Rotation Example](Assets/Screenshots/Rotational_view_example.png)
+
+---
+
+
+
 ## Team Members
 
 - Saksham Sharma  
