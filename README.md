@@ -94,13 +94,13 @@ The system consists of three core modules:
 
 ```
 .
-├── proposal/
-├── research/
-├── design/
-├── development/
-├── evaluation/
-├── blogs/
-└── assets/
+├── Proposal/
+├── Research/
+├── Design/
+├── Development/
+├── Evaluation/
+├── BLOGS/
+└── Assets/
 ```
 
 ---
@@ -138,7 +138,7 @@ Under the guidance of **Dr. Raghav B. Venkataramaiyer**
 ## Project Proposal
 
 Full proposal document available here:  
-[View Proposal](proposal/VR_Proposal_Mock_1.pdf)
+[View Proposal](Proposal/VR_Proposal_Mock_1.pdf)
 
 ---
 
