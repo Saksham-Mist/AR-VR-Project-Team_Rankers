@@ -1,118 +1,188 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>3D Transformation Visualizer</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<meta charset="UTF-8">
+<title>3D Transformation Visualizer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style>
+body { margin:0; font-family: Arial; }
+#container { display:flex; height:100vh; }
+#scene { flex:3; }
+#controls {
+  flex:1;
+  padding:20px;
+  background:#f5f5f5;
+  overflow-y:auto;
+}
+h2 { margin-top:10px; }
+button { margin-top:10px; padding:6px 12px; }
+pre { background:white; padding:10px; font-size:12px; }
+#history { font-size:12px; background:white; padding:10px; max-height:120px; overflow:auto; }
+</style>
 </head>
 
-<body style="margin:0; font-family: Arial;">
+<body>
 
-<div style="display:flex; height:100vh;">
+<div id="container">
 
-  <div id="scene" style="flex:3;"></div>
+<div id="scene"></div>
 
-  <div style="flex:1; padding:20px; background:#f5f5f5;">
-    <h2>Translation Controls</h2>
+<div id="controls">
 
-    <label>X:
-      <input type="range" id="tx" min="-5" max="5" step="0.1" value="0">
-    </label><br><br>
+<h2>Translation</h2>
+X <input type="range" id="tx" min="-5" max="5" step="0.1" value="0"><br>
+Y <input type="range" id="ty" min="-5" max="5" step="0.1" value="0"><br>
+Z <input type="range" id="tz" min="-5" max="5" step="0.1" value="0"><br>
 
-    <label>Y:
-      <input type="range" id="ty" min="-5" max="5" step="0.1" value="0">
-    </label><br><br>
+<h2>Rotation</h2>
+X <input type="range" id="rx" min="0" max="360" value="0"><br>
+Y <input type="range" id="ry" min="0" max="360" value="0"><br>
+Z <input type="range" id="rz" min="0" max="360" value="0"><br>
 
-    <label>Z:
-      <input type="range" id="tz" min="-5" max="5" step="0.1" value="0">
-    </label>
+<br>
+<label><input type="checkbox" checked onchange="toggleAxes(this.checked)"> Show Axes</label><br>
+<label><input type="checkbox" checked onchange="toggleBreakdown(this.checked)"> Show Matrix Breakdown</label>
 
+<br><br>
+<button onclick="resetObject()">Reset</button>
 
-    <br><br>
-    <h2>Rotation Controls</h2>
+<h3>Transformation Matrix</h3>
+<pre id="matrixDisplay"></pre>
 
-    <label>Rotate X:
-    <input type="range" id="rx" min="0" max="360" value="0">
-    </label><br><br>
+<h3>Transformation History</h3>
+<div id="history"></div>
 
-    <label>Rotate Y:
-    <input type="range" id="ry" min="0" max="360" value="0">
-    </label><br><br>
-
-    <label>Rotate Z:
-    <input type="range" id="rz" min="0" max="360" value="0">
-    </label>
-
-
-    <br><br>
-    <h3>Transformation Matrix</h3>
-    <pre id="matrixDisplay" style="background:white; padding:10px; font-size:12px;"></pre>
-
-  </div>
+</div>
 </div>
 
 <script>
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-  const renderer = new THREE.WebGLRenderer({antialias:true});
-  renderer.setSize(window.innerWidth * 0.75, window.innerHeight);
-  document.getElementById("scene").appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth * 0.75, window.innerHeight);
+document.getElementById("scene").appendChild(renderer.domElement);
 
-  const geometry = new THREE.BoxGeometry();
-  const material = new THREE.MeshNormalMaterial();
-  const cube = new THREE.Mesh(geometry, material);
-  scene.add(cube);
+// MAIN CUBE (transformed)
+const geometry = new THREE.BoxGeometry();
+const material = new THREE.MeshNormalMaterial();
+const cube = new THREE.Mesh(geometry, material);
+scene.add(cube);
 
-  const axesHelper = new THREE.AxesHelper(5);
-  scene.add(axesHelper);
+// GHOST ORIGINAL CUBE
+const ghostMaterial = new THREE.MeshBasicMaterial({
+  color:0x888888,
+  transparent:true,
+  opacity:0.3,
+  wireframe:false
+});
+const ghostCube = new THREE.Mesh(geometry, ghostMaterial);
+scene.add(ghostCube);
 
-  camera.position.set(4,4,6);
-  camera.lookAt(0,0,0);
+// AXES
+const axesHelper = new THREE.AxesHelper(5);
+scene.add(axesHelper);
 
-  function updateTranslation() {
-  const tx = parseFloat(document.getElementById("tx").value);
-  const ty = parseFloat(document.getElementById("ty").value);
-  const tz = parseFloat(document.getElementById("tz").value);
+camera.position.set(4,4,6);
+camera.lookAt(0,0,0);
 
-  const rx = THREE.MathUtils.degToRad(parseFloat(document.getElementById("rx").value));
-  const ry = THREE.MathUtils.degToRad(parseFloat(document.getElementById("ry").value));
-  const rz = THREE.MathUtils.degToRad(parseFloat(document.getElementById("rz").value));
+let showBreakdown = true;
+
+function updateTransformation() {
+  const tx = parseFloat(txInput.value);
+  const ty = parseFloat(tyInput.value);
+  const tz = parseFloat(tzInput.value);
+
+  const rx = THREE.MathUtils.degToRad(parseFloat(rxInput.value));
+  const ry = THREE.MathUtils.degToRad(parseFloat(ryInput.value));
+  const rz = THREE.MathUtils.degToRad(parseFloat(rzInput.value));
 
   cube.position.set(tx, ty, tz);
   cube.rotation.set(rx, ry, rz);
 
   cube.updateMatrix();
-  const m = cube.matrix.elements;
+  displayMatrix(cube.matrix.elements);
+  logTransformation(tx, ty, tz, rxInput.value, ryInput.value, rzInput.value);
+}
 
+function displayMatrix(m) {
   let matrixText = "";
+
   for (let i = 0; i < 4; i++) {
-    matrixText += 
+    matrixText +=
       m[i].toFixed(2) + "   " +
       m[i+4].toFixed(2) + "   " +
       m[i+8].toFixed(2) + "   " +
       m[i+12].toFixed(2) + "\n";
   }
 
-  document.getElementById("matrixDisplay").textContent = matrixText;
-}
-
-
-
-  document.getElementById("tx").addEventListener("input", updateTranslation);
-  document.getElementById("ty").addEventListener("input", updateTranslation);
-  document.getElementById("tz").addEventListener("input", updateTranslation);
-  document.getElementById("rx").addEventListener("input", updateTranslation);
-  document.getElementById("ry").addEventListener("input", updateTranslation);
-  document.getElementById("rz").addEventListener("input", updateTranslation);
-
-
-  function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+  if (showBreakdown) {
+    matrixText += "\nMatrix Breakdown:\n";
+    matrixText += "Row 1 → X transformation\n";
+    matrixText += "Row 2 → Y transformation\n";
+    matrixText += "Row 3 → Z transformation\n";
+    matrixText += "Column 4 → Translation components\n";
   }
 
-  animate();
-  updateTranslation();
+  matrixDisplay.textContent = matrixText;
+}
+
+function resetObject() {
+  txInput.value = 0;
+  tyInput.value = 0;
+  tzInput.value = 0;
+  rxInput.value = 0;
+  ryInput.value = 0;
+  rzInput.value = 0;
+
+  cube.position.set(0,0,0);
+  cube.rotation.set(0,0,0);
+  cube.scale.set(1,1,1);
+
+  historyDiv.innerHTML = "";
+  updateTransformation();
+}
+
+function toggleAxes(state) {
+  axesHelper.visible = state;
+}
+
+function toggleBreakdown(state) {
+  showBreakdown = state;
+  updateTransformation();
+}
+
+function logTransformation(tx, ty, tz, rx, ry, rz) {
+  const entry = document.createElement("div");
+  entry.textContent =
+    `T(${tx}, ${ty}, ${tz})  R(${rx}°, ${ry}°, ${rz}°)`;
+  historyDiv.appendChild(entry);
+}
+
+// ELEMENT REFERENCES
+const txInput = document.getElementById("tx");
+const tyInput = document.getElementById("ty");
+const tzInput = document.getElementById("tz");
+const rxInput = document.getElementById("rx");
+const ryInput = document.getElementById("ry");
+const rzInput = document.getElementById("rz");
+const matrixDisplay = document.getElementById("matrixDisplay");
+const historyDiv = document.getElementById("history");
+
+// EVENTS
+txInput.addEventListener("input", updateTransformation);
+tyInput.addEventListener("input", updateTransformation);
+tzInput.addEventListener("input", updateTransformation);
+rxInput.addEventListener("input", updateTransformation);
+ryInput.addEventListener("input", updateTransformation);
+rzInput.addEventListener("input", updateTransformation);
+
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+animate();
+updateTransformation();
 </script>
 
 </body>
