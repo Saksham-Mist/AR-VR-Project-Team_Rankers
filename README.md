@@ -149,6 +149,8 @@ This directly supports our goal of improving understanding of geometric transfor
 ### Rotation Example
 ![Rotation Example](Assets/Screenshots/Rotational_view_example.png)
 
+###Updated UI with more features
+![Scaling, Resetting, Breakdown and History](Assets/Screenshots/updated_interface_ui.png)
 ---
 
 
