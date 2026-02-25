@@ -7,23 +7,61 @@
 <style>
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #111;
-  color: white;
-  line-height: 1.6;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: #e5e7eb;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+aside {
+  width: 260px;
+  background: #1e293b;
+  padding: 25px;
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid #334155;
+}
+
+aside h2 {
+  color: #38bdf8;
+  margin-bottom: 15px;
+}
+
+aside a {
+  display: block;
+  color: #cbd5e1;
+  text-decoration: none;
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+aside a:hover {
+  color: #38bdf8;
+}
+
+/* Main Content */
+main {
+  margin-left: 260px;
+  padding: 60px 10%;
+  max-width: 1000px;
 }
 
 section {
-  padding: 60px 20%;
-  border-bottom: 1px solid #333;
+  margin-bottom: 70px;
 }
 
-h1, h2 {
-  color: #32B8C6;
+h1, h2, h3 {
+  color: #38bdf8;
 }
 
 a {
-  color: #32B8C6;
+  color: #38bdf8;
   text-decoration: none;
 }
 
@@ -35,87 +73,137 @@ a:hover {
   display: inline-block;
   margin-top: 20px;
   padding: 10px 20px;
-  background: #32B8C6;
-  color: black;
+  background: #38bdf8;
+  color: #0f172a;
   font-weight: bold;
+  border-radius: 6px;
+}
+
+ul {
+  padding-left: 20px;
 }
 
 footer {
   text-align: center;
-  padding: 20px;
+  padding: 30px;
   font-size: 13px;
-  color: #888;
+  color: #94a3b8;
+  border-top: 1px solid #334155;
 }
 </style>
 </head>
 
 <body>
 
-<section>
+<div class="layout">
+
+<!-- Sidebar Navigation -->
+<aside>
+  <h2>Project Navigation</h2>
+  <a href="#overview">Overview</a>
+  <a href="#demo">Live Demo</a>
+  <a href="#usage">How It Works</a>
+  <a href="#blogs">Development Blogs</a>
+  <a href="#future">Future Scope</a>
+  <a href="#repo">Repository</a>
+</aside>
+
+<!-- Main Content -->
+<main>
+
+<section id="overview">
   <h1>3D Geometric Transformation Visualization Environment</h1>
   <p>
-    An interactive system designed to bridge the gap between abstract 2D matrix representations
-    and real-world 3D spatial transformations.
+    An interactive web-based system designed to bridge the gap between abstract
+    2D matrix representations and real-world 3D spatial transformations.
+  </p>
+
+  <p>
+    The platform enables real-time manipulation of 3D objects while simultaneously
+    displaying the transformation matrix, reinforcing the connection between
+    mathematical theory and spatial intuition.
   </p>
 </section>
 
-<section>
-  <h2>🔗 Live Interactive Prototype</h2>
+<section id="demo">
+  <h2>Live Interactive Prototype</h2>
   <p>
-    You can explore the deployed 3D transformation demo below.
+    Explore the deployed 3D transformation environment:
   </p>
 
-  <a class="button" href="https://relaxed-belekoy-c0de3b.netlify.app/" target="_blank">
+  <a class="button" href="https://ar-vr-3d-visualizer.netlify.app" target="_blank">
     Launch Live Demo
   </a>
 </section>
 
-<section>
-  <h2>📘 Project Overview</h2>
+<section id="usage">
+  <h2>How It Works</h2>
 
-  <p>
-    Traditional engineering and computer graphics education relies heavily on
-    2D diagrams to explain inherently 3D concepts such as rotation,
-    translation, and composite transformations.
-  </p>
-
-  <p>
-    Our system replaces static diagrams with real-time 3D interaction.
-    Users can manipulate objects while observing the transformation matrix update instantly,
-    creating a direct link between mathematical representation and spatial movement.
-  </p>
-
-  <h3>How to Use the Demo:</h3>
   <ul>
-    <li>Open the Live Demo link above</li>
-    <li>Use sliders to translate and rotate the cube</li>
-    <li>Observe real-time matrix updates</li>
-    <li>Use mouse to orbit around the object</li>
+    <li>Real-time translation, rotation, and scaling controls</li>
+    <li>Live transformation matrix updates</li>
+    <li>Ghost cube at origin for baseline comparison</li>
+    <li>Interactive orbit controls for spatial inspection</li>
   </ul>
 
   <p>
-    This prototype validates the interaction model before full VR implementation.
+    This prototype validates the educational interaction model prior to
+    immersive VR implementation.
   </p>
 </section>
 
-<section>
-  <h2>📝 Development Blogs</h2>
+<section id="blogs">
+  <h2>Development Blogs</h2>
 
-  <p>Follow our weekly progress and reflections:</p>
+  <h3>Member 1 – Saksham</h3>
+  <ul>
+    <li><a href="https://sakshamsharma880460.substack.com/p/the-very-first-step" target="_blank">Week 1 – Conceptual Foundations</a></li>
+    <li><a href="https://sakshamsharma880460.substack.com/p/week-2-turning-theory-into-an-interactive" target="_blank">Week 2 – Prototype Development</a></li>
+    <li><a href="https://sakshamsharma880460.substack.com/p/week-3-functional-prototype-to-structured" target="_blank">Week 3 – UI & Structural Improvements</a></li>
+  </ul>
 
+  <h3>Member 2 – Daivik</h3>
   <ul>
     <li><a href="https://daivikpathak.substack.com/p/vr-based-geometric-transformation" target="_blank">Week 1 – Identifying the 2D Bottleneck</a></li>
-    <li><a href="https://sakshamsharma880460.substack.com/p/week-2-turning-theory-into-an-interactive" target="_blank">Week 2 – Building the Web Prototype</a></li>
-    <li><a href="https://substack.com/@shouryakapoor/note/c-215194123" target="_blank">Week 3 – Documentation & Evaluation</a></li>
-  </ul>
-</section>
+    <li><a href="https://substack.com/@daivikpathak/note/c-215194520" target="_blank">Week 2 – System Evaluation Planning</a></li>
+    <li><a href="https://substack.com/@daivikpathak/note/c-219406407" target="_blank">Week 3 – Vision to Volume</a></li>
 
-<section>
-  <h2>📂 Full Documentation</h2>
+  </ul>
+
+  <h3>Member 3 – Shourya</h3>
+  <ul>
+    <li><a href="https://shouryakapoor.substack.com/p/avr-project" target="_blank">Week 1 – Documentation Strategy</a></li>
+    <li><a href="https://substack.com/@shouryakapoor/note/c-215194123" target="_blank">Week 2 – Deployment Workflow</a></li>
+    <li><a href="https://substack.com/@shouryakapoor/note/c-219415815" target="_blank">Week 3 – Strengthening the Structure</a></li>
+  </ul>
 
   <p>
-    Detailed design, research, evaluation, and development files
-    are available in this repository.
+    All blogs are organized chronologically within our dedicated Substack
+    development log sections.
+  </p>
+</section>
+
+<section id="future">
+  <h2>Future Scope</h2>
+
+  <p>
+    The next planned iteration explores AI-assisted object recognition,
+    enabling real-world object classification and substitution with
+    predefined 3D models for transformation learning.
+  </p>
+
+  <p>
+    This extension aims to move the platform beyond abstract geometric
+    primitives toward contextual, real-world interaction.
+  </p>
+</section>
+
+<section id="repo">
+  <h2>Full Repository</h2>
+
+  <p>
+    Detailed design documentation, development logs, and deployment workflow
+    are available within the GitHub repository.
   </p>
 
   <a class="button" href="https://github.com/Saksham-Mist/AR-VR-Project-Team_Rankers" target="_blank">
@@ -124,8 +212,11 @@ footer {
 </section>
 
 <footer>
-  Academic Project – AR/VR Visualization Research
+  AR/VR Geometric Transformation Research Project – Academic Implementation
 </footer>
+
+</main>
+</div>
 
 </body>
 </html>
