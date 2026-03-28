@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>3D Transformation Learning Environment</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="main.js" defer></script>
 
 <style>
 body {
@@ -28,6 +29,7 @@ body {
   background:#1e293b;
   overflow-y:auto;
   box-shadow: -5px 0 20px rgba(0,0,0,0.4);
+
 }
 
 h2, h3 {
@@ -102,6 +104,8 @@ Z <input type="range" id="sz" min="0.5" max="3" step="0.1" value="1">
 
 <br>
 <button onclick="resetObject()">Reset</button>
+<br><br>
+<button onclick="openAR()">Open Camera Mode</button>
 
 <h3>Transformation Matrix</h3>
 <pre id="matrixDisplay"></pre>
@@ -112,151 +116,6 @@ Z <input type="range" id="sz" min="0.5" max="3" step="0.1" value="1">
 </div>
 </div>
 
-<script>
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0f172a);
-
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth * 0.75, window.innerHeight);
-document.getElementById("scene").appendChild(renderer.domElement);
-
-// Lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-scene.add(ambientLight);
-
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-directionalLight.position.set(5,10,7);
-scene.add(directionalLight);
-
-// Grid & Axes
-const gridHelper = new THREE.GridHelper(20,20,0x444444,0x222222);
-scene.add(gridHelper);
-
-const axesHelper = new THREE.AxesHelper(5);
-scene.add(axesHelper);
-
-// Main Cube
-const geometry = new THREE.BoxGeometry();
-const material = new THREE.MeshStandardMaterial({
-  color:0x3fa7ff,
-  metalness:0.2,
-  roughness:0.4
-});
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
-
-// Ghost Cube
-const ghostMaterial = new THREE.MeshBasicMaterial({
-  color:0xffffff,
-  wireframe:true,
-  transparent:true,
-  opacity:0.4
-});
-const ghostCube = new THREE.Mesh(geometry, ghostMaterial);
-scene.add(ghostCube);
-
-camera.position.set(4,4,6);
-camera.lookAt(0,0,0);
-
-let showBreakdown = true;
-
-function updateTransformation() {
-
-  const tx = parseFloat(txInput.value);
-  const ty = parseFloat(tyInput.value);
-  const tz = parseFloat(tzInput.value);
-
-  const rx = THREE.MathUtils.degToRad(parseFloat(rxInput.value));
-  const ry = THREE.MathUtils.degToRad(parseFloat(ryInput.value));
-  const rz = THREE.MathUtils.degToRad(parseFloat(rzInput.value));
-
-  const sx = parseFloat(sxInput.value);
-  const sy = parseFloat(syInput.value);
-  const sz = parseFloat(szInput.value);
-
-  cube.position.set(tx, ty, tz);
-  cube.rotation.set(rx, ry, rz);
-  cube.scale.set(sx, sy, sz);
-
-  cube.updateMatrix();
-  displayMatrix(cube.matrix.elements);
-  logTransformation(tx, ty, tz, rxInput.value, ryInput.value, rzInput.value, sx, sy, sz);
-}
-
-function displayMatrix(m) {
-  let matrixText = "";
-
-  for (let i = 0; i < 4; i++) {
-    matrixText +=
-      m[i].toFixed(2) + "   " +
-      m[i+4].toFixed(2) + "   " +
-      m[i+8].toFixed(2) + "   " +
-      m[i+12].toFixed(2) + "\n";
-  }
-
-  if (showBreakdown) {
-    matrixText += "\nMatrix Breakdown:\n";
-    matrixText += "Row 1 → X basis\n";
-    matrixText += "Row 2 → Y basis\n";
-    matrixText += "Row 3 → Z basis\n";
-    matrixText += "Column 4 → Translation\n";
-  }
-
-  matrixDisplay.textContent = matrixText;
-}
-
-function resetObject() {
-  txInput.value = tyInput.value = tzInput.value = 0;
-  rxInput.value = ryInput.value = rzInput.value = 0;
-  sxInput.value = syInput.value = szInput.value = 1;
-
-  historyDiv.innerHTML = "";
-  updateTransformation();
-}
-
-function toggleAxes(state) {
-  axesHelper.visible = state;
-}
-
-function toggleBreakdown(state) {
-  showBreakdown = state;
-  updateTransformation();
-}
-
-function logTransformation(tx, ty, tz, rx, ry, rz, sx, sy, sz) {
-  const entry = document.createElement("div");
-  entry.textContent =
-    `T(${tx}, ${ty}, ${tz})  R(${rx}°, ${ry}°, ${rz}°)  S(${sx}, ${sy}, ${sz})`;
-  historyDiv.appendChild(entry);
-}
-
-// Element references
-const txInput = document.getElementById("tx");
-const tyInput = document.getElementById("ty");
-const tzInput = document.getElementById("tz");
-const rxInput = document.getElementById("rx");
-const ryInput = document.getElementById("ry");
-const rzInput = document.getElementById("rz");
-const sxInput = document.getElementById("sx");
-const syInput = document.getElementById("sy");
-const szInput = document.getElementById("sz");
-
-const matrixDisplay = document.getElementById("matrixDisplay");
-const historyDiv = document.getElementById("history");
-
-txInput.oninput = tyInput.oninput = tzInput.oninput =
-rxInput.oninput = ryInput.oninput = rzInput.oninput =
-sxInput.oninput = syInput.oninput = szInput.oninput =
-updateTransformation;
-
-function animate() {
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
-}
-animate();
-updateTransformation();
-</script>
 
 </body>
 </html>
