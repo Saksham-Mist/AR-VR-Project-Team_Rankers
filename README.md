@@ -1,10 +1,8 @@
-# VR-Based Geometric Transformation Training Environment
+# AR-Based Geometric Transformation Environment  
 ### AR-VR-Project-Team_Rankers
 
-![Unity](https://img.shields.io/badge/Engine-Unity-000000?logo=unity)
-![Language](https://img.shields.io/badge/Language-C%23-purple)
-![Framework](https://img.shields.io/badge/Framework-OpenXR-blue)
-![Status](https://img.shields.io/badge/Status-Under%20Development-orange)
+![Status](https://img.shields.io/badge/Status-Prototype%20Complete-green)
+![Tech](https://img.shields.io/badge/Tech-Three.js%20%7C%20AR.js-blue)
 
 ---
 
@@ -12,133 +10,90 @@
 - [Abstract](#abstract)
 - [Problem Statement](#problem-statement)
 - [Proposed Solution](#proposed-solution)
-- [System Architecture](#system-architecture)
+- [System Overview](#system-overview)
 - [Technology Stack](#technology-stack)
-- [Repository Structure](#repository-structure)
-- [Timeline](#timeline)
+- [Web-Based Prototype (Phase 2)](#web-based-prototype-phase-2)
+- [AR Integration](#ar-integration)
+- [Features](#features)
 - [Feasibility & Scope Control](#feasibility--scope-control)
+- [Timeline](#timeline)
+- [Repository Structure](#repository-structure)
 - [Team Members](#team-members)
-- [Project Proposal](#project-proposal)
 
 ---
 
 ## Abstract
 
-Spatial transformations such as translation, rotation, and scaling form the mathematical backbone of robotics, computer graphics, AR/VR systems, and navigation technologies. Despite their importance, these concepts are predominantly taught using two-dimensional diagrams and symbolic matrices. This creates a disconnect between mathematical representation and intuitive spatial understanding.
+Geometric transformations such as translation, rotation, and scaling are fundamental to fields like computer graphics, robotics, and AR/VR systems. However, these concepts are often taught using static 2D representations, making it difficult to build intuitive 3D understanding.
 
-This project proposes a Virtual Reality-based training environment that enables direct interaction with geometric transformations in immersive 3D space. By visualizing coordinate frames, transformation matrices, and object pose changes in real time, the system aims to strengthen spatial reasoning and reduce training inefficiencies caused by 2D-based instruction models.
+This project presents a web-based interactive environment that enables real-time visualization and manipulation of 3D objects. The system is further enhanced with marker-based Augmented Reality (AR), allowing users to preview and transfer objects into an interactive transformation space.
 
 ---
 
 ## Problem Statement
 
-- Spatial transformations are taught primarily through 2D diagrams and symbolic matrices.
-- Learners struggle to develop correct 3D intuition.
-- Errors occur in coordinate frame alignment and calibration.
-- Trial-and-error learning increases training time and operational cost.
-
-There exists a gap between symbolic mathematical learning and embodied spatial interaction.
+- Transformation concepts are taught using static 2D diagrams  
+- Lack of intuitive understanding of 3D spatial behavior  
+- Difficulty visualizing object orientation and coordinate changes  
+- Limited interactive learning tools  
 
 ---
 
 ## Proposed Solution
 
-We propose a VR-based interactive training environment that:
+We developed an interactive 3D transformation system that:
 
-- Allows direct manipulation of a 3D object in immersive space
-- Implements translation, rotation, and uniform scaling
-- Displays transformation matrices in real time
-- Visualizes both local and global coordinate frames
-- Enables users to compare pre- and post-transformation states
-
-The system replaces passive 2D learning with active 3D spatial interaction.
+- Allows real-time manipulation of objects in 3D space  
+- Supports translation, rotation, and scaling  
+- Displays transformation matrices dynamically  
+- Extends beyond a cube to include all Platonic solids  
+- Integrates AR-based object preview and selection  
 
 ---
 
-## System Architecture
+## System Overview
 
-The system consists of three core modules:
+### 1. Transformation Environment
+- Built using Three.js  
+- Displays 3D objects in a controllable scene  
+- Supports:
+  - Translation (X, Y, Z)  
+  - Rotation (X, Y, Z)  
+  - Scaling  
+- Includes transformation breakdown and history  
 
-### 1. Interaction Module
-- VR controller-based input
-- Mode selection: Translation / Rotation / Scaling
-- Only one transformation mode active at a time
+---
 
-### 2. Transformation Engine
-- Constructs 4x4 homogeneous transformation matrices
-- Applies explicit matrix multiplication
-- Maintains:
-  - Local object coordinates
-  - World coordinates
-  - Current transformation matrix
-
-### 3. Visualization Module
-- Renders local and global coordinate axes
-- Displays live transformation matrix in UI panel
-- Shows pre- and post-transformation object poses for comparison
-
-*(Architecture diagram will be added in the /assets folder as development progresses.)*
+### 2. AR Interaction Module
+- Built using AR.js  
+- Uses Hiro marker for detection  
+- Enables object preview and selection in AR  
 
 ---
 
 ## Technology Stack
 
-- **Development Engine:** Unity 3D  
-- **Programming Language:** C#  
-- **VR Framework:** OpenXR  
-- **Target Hardware:** Standalone or PC-tethered VR headset  
+- **3D Rendering:** Three.js  
+- **AR Framework:** AR.js  
+- **Languages:** HTML, CSS, JavaScript  
+- **Deployment:** Netlify  
 
 ---
 
-## Repository Structure
+## Web-Based Prototype (Phase 2)
 
-```
-.
-├── Proposal/
-├── Research/
-├── Design/
-├── Development/
-├── Evaluation/
-├── BLOGS/
-└── Assets/
-```
+This phase extends the initial cube-based prototype into a system supporting multiple geometries and AR interaction.
 
----
+### Supported Platonic Solids
+- Tetrahedron  
+- Cube (Hexahedron)  
+- Octahedron  
+- Dodecahedron  
+- Icosahedron  
 
-## Timeline
-
-| Week | Task | Deliverable |
-|------|------|------------|
-| 1 | Unity setup & VR integration | Base VR scene with object interaction |
-| 2 | Implement transformations & coordinate visualization | Functional translation, rotation, scaling |
-| 3 | UI overlay, testing & documentation | Demo-ready prototype |
+All solids follow the same transformation pipeline, demonstrating consistency across different geometries.
 
 ---
-
-## Feasibility & Scope Control
-
-- Single 3D object
-- Three transformations only
-- No physics or ML components
-- Offline single-user system
-- Backup: Desktop 3D version if VR hardware access is limited
-
----
-
----
-
-## Web-Based Prototype (Phase 1 Implementation)
-
-To validate our concept before moving into full Unity development, we created a lightweight web-based 3D transformation prototype.
-
-This prototype demonstrates:
-
-- Real-time 3D cube visualization
-- Translation along X, Y, Z axes
-- Rotation along X, Y, Z axes
-- Live transformation matrix updates
-
-This directly supports our goal of improving understanding of geometric transformations by visualizing them in 3D instead of static 2D diagrams.
 
 ### Default View
 ![Default View](Assets/Screenshots/Default_view.png)
@@ -152,11 +107,67 @@ This directly supports our goal of improving understanding of geometric transfor
 ### Updated UI with more features
 ![Scaling, Resetting, Breakdown and History](Assets/Screenshots/updated_interface_ui.png)
 
-### Latest Prototype Working
-![Working Prototype for Platonic Solids](Assets/Screenshots/Final_prototype.png)
+### AR Interaction View
+![AR View for Platonic Solids](Assets/Screenshots/Final_prototype.png)
+
 ---
 
+## AR Integration
 
+### Workflow
+1. User opens camera mode  
+2. Hiro marker is detected  
+3. Selected Platonic solid is displayed in AR  
+4. User confirms selection  
+5. Object is transferred to main scene  
+6. Transformations are applied normally  
+
+---
+
+## Features
+
+- Real-time 3D transformations  
+- Support for all Platonic solids  
+- Dynamic object switching  
+- Marker-based AR preview  
+- Transformation matrix visualization  
+- Reset to default cube  
+- Transformation history tracking  
+
+---
+
+## Feasibility & Scope Control
+
+- Limited to basic 3D transformations (translation, rotation, scaling)  
+- Single marker-based AR system (Hiro marker)  
+- No AI/ML-based detection  
+- Web-based implementation for accessibility  
+- Focus on conceptual understanding rather than complex rendering  
+
+---
+
+## Timeline
+
+| Phase | Task | Outcome |
+|------|------|--------|
+| Phase 1 | Basic 3D cube transformations | Functional transformation system |
+| Phase 2 | Platonic solids + AR integration | Interactive AR-enabled prototype |
+| Phase 3 | Testing & refinement | Demo-ready system |
+
+---
+
+## Repository Structure
+.
+├── Proposal/
+├── Research/
+├── Design/
+├── Development/
+│ └── web_prototype/
+├── Evaluation/
+├── BLOGS/
+└── Assets/
+
+---
 
 ## Team Members
 
@@ -165,13 +176,6 @@ This directly supports our goal of improving understanding of geometric transfor
 - Shourya Kapoor  
 
 Under the guidance of **Dr. Raghav B. Venkataramaiyer**
-
----
-
-## Project Proposal
-
-Full proposal document available here:  
-[View Proposal](Proposal/VR_Proposal_Mock_1.pdf)
 
 ---
 
