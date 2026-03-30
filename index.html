@@ -30,22 +30,23 @@ aside {
 
 aside h2 {
   color: #38bdf8;
-  margin-bottom: 15px;
 }
 
 aside a {
   display: block;
   color: #cbd5e1;
   text-decoration: none;
-  margin: 8px 0;
+  margin: 10px 0;
   font-size: 14px;
+  transition: 0.3s;
 }
 
 aside a:hover {
   color: #38bdf8;
+  transform: translateX(5px);
 }
 
-/* Main Content */
+/* Main */
 main {
   margin-left: 260px;
   padding: 60px 10%;
@@ -53,36 +54,78 @@ main {
 }
 
 section {
-  margin-bottom: 70px;
+  margin-bottom: 80px;
 }
 
 h1, h2, h3 {
   color: #38bdf8;
 }
 
-a {
-  color: #38bdf8;
-  text-decoration: none;
+h2 {
+  border-bottom: 1px solid #334155;
+  padding-bottom: 5px;
 }
 
-a:hover {
-  text-decoration: underline;
-}
-
+/* Button */
 .button {
   display: inline-block;
   margin-top: 20px;
-  padding: 10px 20px;
+  padding: 12px 24px;
   background: #38bdf8;
   color: #0f172a;
   font-weight: bold;
   border-radius: 6px;
+  transition: 0.3s;
 }
 
-ul {
-  padding-left: 20px;
+.button:hover {
+  background: #0ea5e9;
+  transform: scale(1.05);
 }
 
+/* Blog dropdown */
+.blog-dropdown {
+  margin-top: 20px;
+}
+
+.member-btn {
+  width: 100%;
+  padding: 12px;
+  background: #1e293b;
+  color: #38bdf8;
+  border: 1px solid #334155;
+  text-align: left;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: 0.3s;
+}
+
+.member-btn:hover {
+  background: #334155;
+}
+
+/* Animated dropdown */
+.member-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+  padding-left: 10px;
+}
+
+.member-content a {
+  display: block;
+  padding: 8px;
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+.member-content a:hover {
+  color: #38bdf8;
+  transform: translateX(5px);
+}
+
+/* Footer */
 footer {
   text-align: center;
   padding: 30px;
@@ -97,7 +140,7 @@ footer {
 
 <div class="layout">
 
-<!-- Sidebar Navigation -->
+<!-- Sidebar -->
 <aside>
   <h2>Project Navigation</h2>
   <a href="#overview">Overview</a>
@@ -108,30 +151,27 @@ footer {
   <a href="#repo">Repository</a>
 </aside>
 
-<!-- Main Content -->
+<!-- Main -->
 <main>
 
 <section id="overview">
   <h1>3D Geometric Transformation Visualization Environment</h1>
+
   <p>
-    An interactive web-based system designed to bridge the gap between abstract
-    2D matrix representations and real-world 3D spatial transformations.
+    An interactive 3D environment that transforms abstract mathematical concepts into intuitive visual experiences.
   </p>
 
   <p>
-    The platform enables real-time manipulation of 3D objects while simultaneously
-    displaying the transformation matrix, reinforcing the connection between
-    mathematical theory and spatial intuition.
+    What started as a simple cube-based transformation system evolved into a dynamic platform supporting multiple geometries and real-time interaction, enhanced further with Augmented Reality.
   </p>
 </section>
 
 <section id="demo">
   <h2>Live Interactive Prototype</h2>
-  <p>
-    Explore the deployed 3D transformation environment:
-  </p>
 
-  <a class="button" href="https://ar-vr-3d-visualizer.netlify.app" target="_blank">
+  <p>Explore the deployed system:</p>
+
+  <a class="button" href="https://graceful-scone-39af86.netlify.app/" target="_blank">
     Launch Live Demo
   </a>
 </section>
@@ -140,83 +180,84 @@ footer {
   <h2>How It Works</h2>
 
   <ul>
-    <li>Real-time translation, rotation, and scaling controls</li>
+    <li>Real-time translation, rotation, and scaling</li>
     <li>Live transformation matrix updates</li>
-    <li>Ghost cube at origin for baseline comparison</li>
-    <li>Interactive orbit controls for spatial inspection</li>
+    <li>Multiple Platonic solids support</li>
+    <li>Marker-based AR interaction</li>
   </ul>
-
-  <p>
-    This prototype validates the educational interaction model prior to
-    immersive VR implementation.
-  </p>
 </section>
 
 <section id="blogs">
   <h2>Development Blogs</h2>
 
-  <h3>Member 1 – Saksham</h3>
-  <ul>
-    <li><a href="https://sakshamsharma880460.substack.com/p/the-very-first-step" target="_blank">Week 1 – Conceptual Foundations</a></li>
-    <li><a href="https://sakshamsharma880460.substack.com/p/week-2-turning-theory-into-an-interactive" target="_blank">Week 2 – Prototype Development</a></li>
-    <li><a href="https://sakshamsharma880460.substack.com/p/week-3-functional-prototype-to-structured" target="_blank">Week 3 – UI & Structural Improvements</a></li>
-  </ul>
+  <div class="blog-dropdown">
 
-  <h3>Member 2 – Daivik</h3>
-  <ul>
-    <li><a href="https://daivikpathak.substack.com/p/vr-based-geometric-transformation" target="_blank">Week 1 – Identifying the 2D Bottleneck</a></li>
-    <li><a href="https://substack.com/@daivikpathak/note/c-215194520" target="_blank">Week 2 – System Evaluation Planning</a></li>
-    <li><a href="https://substack.com/@daivikpathak/note/c-219406407" target="_blank">Week 3 – Vision to Volume</a></li>
+    <!-- Saksham -->
+    <button class="member-btn">Saksham</button>
+    <div class="member-content">
+      <a href="https://sakshamsharma880460.substack.com/p/the-very-first-step" target="_blank">Week 1</a>
+      <a href="https://sakshamsharma880460.substack.com/p/week-2-turning-theory-into-an-interactive" target="_blank">Week 2</a>
+      <a href="https://sakshamsharma880460.substack.com/p/week-3-functional-prototype-to-structured" target="_blank">Week 3</a>
+      <a href="https://sakshamsharma880460.substack.com/p/from-a-static-cube-to-an-interactive" target="_blank">Week 4</a>
+    </div>
 
-  </ul>
+    <!-- Daivik -->
+    <button class="member-btn">Daivik</button>
+    <div class="member-content">
+      <a href="https://daivikpathak.substack.com/p/vr-based-geometric-transformation" target="_blank">Week 1</a>
+      <a href="https://substack.com/@daivikpathak/note/c-215194520" target="_blank">Week 2</a>
+      <a href="https://substack.com/@daivikpathak/note/c-219406407" target="_blank">Week 3</a>
+      <a href="https://substack.com/@daivikpathak/note/c-235436052" target="_blank">Week 4</a>
+    </div>
 
-  <h3>Member 3 – Shourya</h3>
-  <ul>
-    <li><a href="https://shouryakapoor.substack.com/p/avr-project" target="_blank">Week 1 – Documentation Strategy</a></li>
-    <li><a href="https://substack.com/@shouryakapoor/note/c-215194123" target="_blank">Week 2 – Deployment Workflow</a></li>
-    <li><a href="https://substack.com/@shouryakapoor/note/c-219415815" target="_blank">Week 3 – Strengthening the Structure</a></li>
-  </ul>
+    <!-- Shourya -->
+    <button class="member-btn">Shourya</button>
+    <div class="member-content">
+      <a href="https://shouryakapoor.substack.com/p/avr-project" target="_blank">Week 1</a>
+      <a href="https://substack.com/@shouryakapoor/note/c-215194123" target="_blank">Week 2</a>
+      <a href="https://substack.com/@shouryakapoor/note/c-219415815" target="_blank">Week 3</a>
+      <a href="https://substack.com/@shouryakapoor/note/c-235379634?r=7hs6ir" target="_blank">Week 4</a>
+    </div>
 
-  <p>
-    All blogs are organized chronologically within our dedicated Substack
-    development log sections.
-  </p>
+  </div>
 </section>
 
 <section id="future">
   <h2>Future Scope</h2>
 
   <p>
-    The next planned iteration explores AI-assisted object recognition,
-    enabling real-world object classification and substitution with
-    predefined 3D models for transformation learning.
-  </p>
-
-  <p>
-    This extension aims to move the platform beyond abstract geometric
-    primitives toward contextual, real-world interaction.
+    Future work includes extending the system toward intelligent object recognition and deeper AR interaction, enabling real-world objects to be mapped into transformation space.
   </p>
 </section>
 
 <section id="repo">
   <h2>Full Repository</h2>
 
-  <p>
-    Detailed design documentation, development logs, and deployment workflow
-    are available within the GitHub repository.
-  </p>
-
   <a class="button" href="https://github.com/Saksham-Mist/AR-VR-Project-Team_Rankers" target="_blank">
-    View Full Repository
+    View Repository
   </a>
 </section>
 
 <footer>
-  AR/VR Geometric Transformation Research Project – Academic Implementation
+  AR/VR Geometric Transformation Research Project
 </footer>
 
 </main>
 </div>
+
+<script>
+document.querySelectorAll(".member-btn").forEach(btn => {
+  btn.onclick = function () {
+    const content = this.nextElementSibling;
+
+    if (content.style.maxHeight) {
+      content.style.maxHeight = null;
+    } else {
+      content.style.maxHeight = content.scrollHeight + "px";
+    }
+  };
+});
+</script>
 
 </body>
 </html>
