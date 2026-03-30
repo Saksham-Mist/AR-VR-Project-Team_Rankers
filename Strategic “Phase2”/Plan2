@@ -1,0 +1,111 @@
+Plan 2: Extension to Platonic Solids with AR Integration
+
+Overview
+This phase of the project builds upon the initial transformation system (Plan 1) by extending the visualization from a simple cube to all five Platonic solids. Additionally, we integrate a marker-based AR system to enhance interactivity and real-world alignment.
+
+
+
+Objectives
+- Extend transformation support from cube to all Platonic solids:
+  - Tetrahedron
+  - Cube (Hexahedron)
+  - Octahedron
+  - Dodecahedron
+  - Icosahedron
+- Maintain uniform transformation controls:
+  - Translation (X, Y, Z)
+  - Rotation (X, Y, Z)
+  - Scaling
+- Introduce AR-based interaction using marker detection
+- Enable seamless transfer of objects from AR view to transformation environment
+
+
+System Design
+
+1. Transformation Engine
+- Built using Three.js
+- All objects are treated as mesh geometries
+- Same transformation pipeline applied irrespective of shape
+- No additional dimensional logic required beyond 3D space
+
+
+
+2. Platonic Solid Integration
+- Implemented using built-in geometry classes:
+  - `TetrahedronGeometry`
+  - `BoxGeometry`
+  - `OctahedronGeometry`
+  - `DodecahedronGeometry`
+  - `IcosahedronGeometry`
+- Dynamic object replacement system:
+  - Existing cube is removed
+  - Selected solid is instantiated in its place
+- Transformation controls remain consistent across all solids
+
+
+3. AR Module (Marker-Based Detection)
+- Implemented using AR.js
+- Uses Hiro marker for detection
+- Marker acts as:
+  - Activation trigger for AR environment
+  - Anchor for rendering 3D object
+
+
+4. AR → Main Scene Pipeline
+
+Workflow:
+1. User opens camera mode
+2. Hiro marker is detected
+3. Selected Platonic solid is rendered in AR view
+4. User confirms selection ("Use This Solid")
+5. Shape data is transferred using localStorage
+6. Main scene replaces cube with selected solid
+7. Transformations can be applied normally
+
+
+5. Key Design Decisions
+
+Single Marker Approach
+- One marker used for detection simplicity
+- Shape selection handled via UI instead of multiple markers
+- Avoids complexity and improves reliability
+
+No AI-Based Detection
+- System avoids machine learning models
+- Uses pattern-based detection for efficiency
+- Ensures real-time performance and low resource usage
+
+Uniform Transformation Logic
+- All solids exist in 3D coordinate space
+- Same transformation matrices apply to all objects
+- No need for additional axes or dimension handling
+
+
+Features Implemented
+
+- Real-time transformation controls
+- Dynamic switching between Platonic solids
+- AR preview of selected object
+- Marker-based activation system
+- Object transfer between AR and main scene
+- Reset functionality (returns to default cube)
+
+
+Limitations
+
+- Single marker does not differentiate between objects
+- Shape selection is user-driven, not marker-driven
+- AR and transformation environments are loosely coupled (via data transfer)
+
+Future Scope
+
+- Multi-marker support for automatic shape detection
+- Direct integration of AR scene with transformation engine
+- Face/edge/vertex highlighting for educational visualization
+- Gesture-based interaction in AR mode
+
+
+
+Conclusion
+
+Plan 2 successfully extends the system from a basic cube transformation model to a flexible, interactive platform supporting all Platonic solids. The integration of AR enhances user engagement while maintaining a clear and efficient transformation pipeline.
