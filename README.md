@@ -151,6 +151,9 @@ This directly supports our goal of improving understanding of geometric transfor
 
 ### Updated UI with more features
 ![Scaling, Resetting, Breakdown and History](Assets/Screenshots/updated_interface_ui.png)
+
+### Latest Prototype Working
+![Working Prototype for Platonic Solids](Assets/Screenshots/Final_prototype.png)
 ---
 
 
