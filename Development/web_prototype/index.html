@@ -29,7 +29,6 @@ body {
   background:#1e293b;
   overflow-y:auto;
   box-shadow: -5px 0 20px rgba(0,0,0,0.4);
-
 }
 
 h2, h3 {
@@ -93,10 +92,26 @@ X <input type="range" id="rx" min="0" max="360" value="0">
 Y <input type="range" id="ry" min="0" max="360" value="0">
 Z <input type="range" id="rz" min="0" max="360" value="0">
 
-<h2>Scale</h2>
+<h2>Scale (Data Dimensions)</h2>
 X <input type="range" id="sx" min="0.5" max="3" step="0.1" value="1">
 Y <input type="range" id="sy" min="0.5" max="3" step="0.1" value="1">
 Z <input type="range" id="sz" min="0.5" max="3" step="0.1" value="1">
+
+<!-- 🔥 NEW SECTION -->
+<h2>Dataset Mapping</h2>
+
+<select id="datasetSelect">
+  <option value="">Select Dataset</option>
+  <option value="A">Company A</option>
+  <option value="B">Company B</option>
+  <option value="C">Company C</option>
+</select>
+
+<div id="dataInfo">
+  Feature A: -<br>
+  Feature B: -<br>
+  Feature C: -
+</div>
 
 <br>
 <label><input type="checkbox" checked onchange="toggleAxes(this.checked)"> Show Axes</label><br>
@@ -115,7 +130,6 @@ Z <input type="range" id="sz" min="0.5" max="3" step="0.1" value="1">
 
 </div>
 </div>
-
 
 </body>
 </html>
