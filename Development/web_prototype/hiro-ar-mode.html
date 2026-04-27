@@ -1,0 +1,480 @@
+<! <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AR Mode</title>
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    
+    #floatingPanel {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(30, 41, 59, 0.95);
+      padding: 15px;
+      border-radius: 8px;
+      z-index: 999;
+      max-width: 250px;
+      color: #e5e7eb;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 12px;
+    }
+    
+    #floatingPanel h3 {
+      margin: 0 0 10px 0;
+      color: #3fa7ff;
+      font-size: 14px;
+    }
+    
+    .control-group {
+      margin-bottom: 12px;
+    }
+    
+    .control-group label {
+      display: block;
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+    
+    .control-group input[type="range"] {
+      width: 100%;
+    }
+    
+    .control-group select {
+      width: 100%;
+      padding: 6px;
+      background: #0f172a;
+      color: #e5e7eb;
+      border: 1px solid #3fa7ff;
+      border-radius: 4px;
+    }
+    
+    #floatingPanel button {
+      width: 100%;
+      padding: 8px;
+      margin-top: 8px;
+      background: #3fa7ff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    #floatingPanel button:hover {
+      background: #2b8ce6;
+    }
+  </style>
+</head>
+<body>
+
+<div id="floatingPanel">
+  <button onclick="window.location.href='index.html'" style="background: #8b5cf6; width: 100%; margin-bottom: 10px; padding: 8px;">📋 Mode Select</button>
+  <button onclick="window.location.href='ar-mode.html'" style="background: #10b981; width: 100%; margin-bottom: 15px; padding: 8px;">🖐️ Switch to Gesture</button>
+  <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 10px; border-radius: 6px; margin-bottom: 12px; font-weight: 600; text-align: center;">📍 HIRO MODE</div>
+  <h3>AR Controls</h3>
+  
+  <div class="control-group">
+    <label>Shape:</label>
+    <select id="shapeSelect" onchange="changeARShape(this.value)">
+      <option value="box">Cube</option>
+      <option value="tetrahedron">Tetra</option>
+      <option value="octahedron">Octa</option>
+      <option value="dodecahedron">Dodeca</option>
+      <option value="icosahedron">Icosa</option>
+    </select>
+    <button onclick="location.reload()" style="background: #ef4444; padding: 10px; margin-top: 10px;">🔄 Refresh AR</button>
+  </div>
+
+  <div class="control-group">
+    <h4 style="color: #3fa7ff; margin-top: 15px;">Transformation Sequence</h4>
+    <button onclick="showTOnly()" style="background: #ff6b6b; font-size: 11px;">T Only</button>
+    <button onclick="showTR()" style="background: #fbbf24; font-size: 11px;">T + R</button>
+    <button onclick="showTRS()" style="background: #10b981; font-size: 11px;">T + R + S</button>
+    <button onclick="toggleOrder()" style="background: #8b5cf6; font-size: 11px;">Order Matters</button>
+  </div>
+
+  <div class="control-group">
+    <label>Position X: <span id="txVal">0</span></label>
+    <input type="range" id="tx" min="-5" max="5" step="0.1" value="0" oninput="updateAR()">
+  </div>
+
+  <div class="control-group">
+    <label>Position Y: <span id="tyVal">0</span></label>
+    <input type="range" id="ty" min="-5" max="5" step="0.1" value="0" oninput="updateAR()">
+  </div>
+
+  <div class="control-group">
+    <label>Position Z: <span id="tzVal">0</span></label>
+    <input type="range" id="tz" min="-5" max="5" step="0.1" value="0" oninput="updateAR()">
+  </div>
+
+  <div class="control-group">
+    <label>Rotation X: <span id="rxVal">0</span></label>
+    <input type="range" id="rx" min="0" max="360" value="0" oninput="updateAR()">
+  </div>
+
+  <div class="control-group">
+    <label>Rotation Y: <span id="ryVal">0</span></label>
+    <input type="range" id="ry" min="0" max="360" value="0" oninput="updateAR()">
+  </div>
+
+  <div class="control-group">
+    <label>Rotation Z: <span id="rzVal">0</span></label>
+    <input type="range" id="rz" min="0" max="360" value="0" oninput="updateAR()">
+  </div>
+
+  <div class="control-group">
+    <label>Scale X: <span id="sxVal">1</span></label>
+    <input type="range" id="sx" min="0.5" max="3" step="0.1" value="1" oninput="updateAR()">
+  </div>
+
+  <div class="control-group">
+    <label>Scale Y: <span id="syVal">1</span></label>
+    <input type="range" id="sy" min="0.5" max="3" step="0.1" value="1" oninput="updateAR()">
+  </div>
+
+  <div class="control-group">
+    <label>Scale Z: <span id="szVal">1</span></label>
+    <input type="range" id="sz" min="0.5" max="3" step="0.1" value="1" oninput="updateAR()">
+  </div>
+
+  <button onclick="goBack()" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">← Back to Gesture Mode</button>
+</div>
+
+<a-scene embedded arjs vr-mode-ui="enabled: false">
+  <a-marker preset="hiro">
+    <!-- Grid Floor -->
+    <a-plane color="#1a1a2e" width="2" height="2" rotation="-90 0 0" position="0 0 0" segments-width="10" segments-height="10" opacity="0.5">
+      <a-plane color="#3fa7ff" width="0.1" height="2" position="0 0.01 0"></a-plane>
+      <a-plane color="#3fa7ff" width="2" height="0.1" position="0 0.01 0" rotation="0 0 0"></a-plane>
+    </a-plane>
+    <a-entity id="arShape"
+      geometry="primitive: box"
+      material="color: #3fa7ff"
+      position="0 0.5 0">
+    </a-entity>
+    <!-- Model Space (Original/Local) -->
+    <a-entity id="modelSpaceCube"
+      geometry="primitive: box; width: 1; height: 1; depth: 1"
+      material="color: #ff6b6b; opacity: 0.6"
+      position="0 0.5 0">
+    </a-entity>
+    <!-- Basis Vectors -->
+    <a-entity id="basisVectors">
+      <!-- Red X-axis -->
+      <a-cylinder color="red" radius="0.05" height="1" rotation="0 0 90" position="0.5 0.5 0"></a-cylinder>
+      <!-- Green Y-axis -->
+      <a-cylinder color="green" radius="0.05" height="1" position="0 1 0"></a-cylinder>
+      <!-- Blue Z-axis -->
+      <a-cylinder color="blue" radius="0.05" height="1" rotation="90 0 0" position="0 0.5 0.5"></a-cylinder>
+    </a-entity>
+    <!-- Axis Labels -->
+    <a-text value="X" position="1 0.5 0" color="red" scale="0.5 0.5 0.5"></a-text>
+    <a-text value="Y" position="0 1.5 0" color="green" scale="0.5 0.5 0.5"></a-text>
+    <a-text value="Z" position="0 0.5 1" color="blue" scale="0.5 0.5 0.5"></a-text>
+    <!-- View Space Indicator (Camera View Direction) -->
+    <a-cone id="viewSpaceIndicator"
+      color="#00ffff"
+      radius-bottom="0.2"
+      radius-top="0.05"
+      height="0.5"
+      opacity="0.6"
+      rotation="90 0 0"
+      position="0 0.5 -1">
+    </a-cone>
+    
+  </a-marker>
+  <a-entity camera></a-entity>
+</a-scene>
+
+<script>
+const arShape = document.getElementById("arShape");
+const txInput = document.getElementById("tx");
+const tyInput = document.getElementById("ty");
+const tzInput = document.getElementById("tz");
+const rxInput = document.getElementById("rx");
+const ryInput = document.getElementById("ry");
+const rzInput = document.getElementById("rz");
+const sxInput = document.getElementById("sx");
+const syInput = document.getElementById("sy");
+const szInput = document.getElementById("sz");
+/* ========== TRANSFORMATION SEQUENCE STATE ========== */
+let isReversedOrder = false;
+
+function updateAR() {
+  const tx = parseFloat(txInput.value);
+  const ty = parseFloat(tyInput.value);
+  const tz = parseFloat(tzInput.value);
+  const rx = parseFloat(rxInput.value);
+  const ry = parseFloat(ryInput.value);
+  const rz = parseFloat(rzInput.value);
+  const sx = parseFloat(sxInput.value);
+  const sy = parseFloat(syInput.value);
+  const sz = parseFloat(szInput.value);
+
+  arShape.setAttribute("position", `${tx} ${ty + 0.5} ${tz}`);
+  arShape.setAttribute("rotation", `${rx} ${ry} ${rz}`);
+  arShape.setAttribute("scale", `${sx} ${sy} ${sz}`);
+
+  document.getElementById("txVal").textContent = tx.toFixed(1);
+  document.getElementById("tyVal").textContent = ty.toFixed(1);
+  document.getElementById("tzVal").textContent = tz.toFixed(1);
+  document.getElementById("rxVal").textContent = rx;
+  document.getElementById("ryVal").textContent = ry;
+  document.getElementById("rzVal").textContent = rz;
+  document.getElementById("sxVal").textContent = sx.toFixed(2);
+  document.getElementById("syVal").textContent = sy.toFixed(2);
+  document.getElementById("szVal").textContent = sz.toFixed(2);
+}
+
+function changeARShape(shape) {
+  arShape.setAttribute("geometry", "primitive: " + shape);
+  }
+
+function syncCoordinateSpaces() {
+  const state = JSON.parse(localStorage.getItem("arMatrixState")) || {};
+  
+  const tx = state.tx || 0;
+  const ty = state.ty || 0;
+  const tz = state.tz || 0;
+  const rx = state.rx || 0;
+  const ry = state.ry || 0;
+  const rz = state.rz || 0;
+  const sx = state.sx || 1;
+  const sy = state.sy || 1;
+  const sz = state.sz || 1;
+
+  // Model space: Offset slightly to show alongside world space
+  const modelCube = document.getElementById("modelSpaceCube");
+  if (modelCube) {
+    modelCube.setAttribute("position", "-1 0.5 0");
+    modelCube.setAttribute("scale", `${sx * 0.5} ${sy * 0.5} ${sz * 0.5}`);
+  }
+
+  // View space: Much closer
+  const viewIndicator = document.getElementById("viewSpaceIndicator");
+  if (viewIndicator) {
+    viewIndicator.setAttribute("position", `${tx * 0.1} ${ty * 0.1 + 0.5} ${tz * 0.1 - 0.3}`);
+    viewIndicator.setAttribute("rotation", `${rx} ${ry} ${rz + 90}`);
+  }
+}
+
+function transformBasisVectors() {
+  const state = JSON.parse(localStorage.getItem("arMatrixState")) || {};
+  if (!state.finalMatrix) return;
+
+  const basisVectors = document.getElementById("basisVectors");
+  if (!basisVectors) return;
+
+  const tx = state.tx || 0;
+  const ty = state.ty || 0;
+  const tz = state.tz || 0;
+  const rx = state.rx || 0;
+  const ry = state.ry || 0;
+  const rz = state.rz || 0;
+  const sx = state.sx || 1;
+  const sy = state.sy || 1;
+  const sz = state.sz || 1;
+
+  basisVectors.setAttribute("position", `${tx} ${ty + 0.5} ${tz}`);
+  basisVectors.setAttribute("rotation", `${rx} ${ry} ${rz}`);
+  basisVectors.setAttribute("scale", `${sx} ${sy} ${sz}`);
+}
+
+window.addEventListener('storage', (e) => {
+  if (e.key === 'arCameraState') {
+    const state = JSON.parse(e.newValue);
+    if (state) {
+      txInput.value = state.tx;
+      tyInput.value = state.ty;
+      tzInput.value = state.tz;
+      rxInput.value = state.rx;
+      ryInput.value = state.ry;
+      rzInput.value = state.rz;
+      sxInput.value = state.sx;
+      syInput.value = state.sy;
+      szInput.value = state.sz;
+      updateAR();
+    }
+  } else if (e.key === 'arMatrixState') {
+    syncCoordinateSpaces();
+  }
+});
+
+// Call on page load too
+document.addEventListener('DOMContentLoaded', () => {
+  console.log("DOMContentLoaded fired");
+  setTimeout(() => {
+    // Load desktop values into AR sliders
+    const arState = JSON.parse(localStorage.getItem("arCameraState")) || {};
+    if (arState.tx) {
+      txInput.value = arState.tx;
+      tyInput.value = arState.ty;
+      tzInput.value = arState.tz;
+      rxInput.value = arState.rx;
+      ryInput.value = arState.ry;
+      rzInput.value = arState.rz;
+      sxInput.value = arState.sx;
+      syInput.value = arState.sy;
+      szInput.value = arState.sz;
+      updateAR();
+    }
+    syncCoordinateSpaces();
+  }, 1500);
+});
+
+// Also update when AR controls change
+const allInputs = document.querySelectorAll('#floatingPanel input, #floatingPanel select');
+allInputs.forEach(input => {
+  input.addEventListener('change', transformBasisVectors);
+});
+
+function loadCameraState() {
+  // Don't recreate if already exists
+  if (document.querySelector('[frustum-id]')) {
+    return;
+  }
+  
+  const state = JSON.parse(localStorage.getItem("arCameraState")) || {};
+  const camX = parseFloat(state.camX) || 0;
+  const camY = parseFloat(state.camY) || 0;
+  const camZ = parseFloat(state.camZ) || 3;
+  
+  const frustum = document.createElement('a-entity');
+  frustum.setAttribute("frustum-id", "camera");
+  frustum.setAttribute("geometry", "primitive: cone; radiusBottom: 0.15; radiusTop: 0.05; height: 0.4");
+  frustum.setAttribute("material", "color: #00ff00; opacity: 0.7");
+  frustum.setAttribute("rotation", "90 0 0");
+  frustum.setAttribute("position", `${-camX * 0.25} ${camY * 0.15 - 0.3} ${-camZ * 0.25}`);
+  
+  const marker = document.querySelector('a-marker');
+  if (marker) {
+    marker.appendChild(frustum);
+  }
+}
+
+loadCameraState();
+
+function goBack() {
+  window.location.href = "ar-mode.html";
+}
+
+updateAR();
+function initFrustum() {
+  const marker = document.querySelector('a-marker');
+  if (marker) {
+    console.log("Marker found");
+    loadCameraState();
+  } else {
+    setTimeout(initFrustum, 500);
+  }
+}
+
+setTimeout(initFrustum, 2000);
+// Listen for real-time updates from desktop
+window.addEventListener('storage', (e) => {
+  if (e.key === 'arCameraState') {
+    const state = JSON.parse(e.newValue);
+    if (state) {
+      txInput.value = state.tx;
+      tyInput.value = state.ty;
+      tzInput.value = state.tz;
+      rxInput.value = state.rx;
+      ryInput.value = state.ry;
+      rzInput.value = state.rz;
+      sxInput.value = state.sx;
+      syInput.value = state.sy;
+      szInput.value = state.sz;
+      updateAR();
+    }
+  }
+});
+
+loadCameraState();
+
+/* ========== TRANSFORMATION SEQUENCE BUTTONS ========== */
+function showTOnly() {
+  // Concrete example: T only, no rotation or scale
+  txInput.value = 1.5;
+  tyInput.value = 1;
+  tzInput.value = 0;
+  rxInput.value = 0;
+  ryInput.value = 0;
+  rzInput.value = 0;
+  sxInput.value = 1;
+  syInput.value = 1;
+  szInput.value = 1;
+  updateAR();
+  console.log("T Only: Position (1.5, 1, 0), No rotation/scale");
+}
+
+function showTR() {
+  // T + R: Same translation + rotation
+  txInput.value = 1.5;
+  tyInput.value = 1;
+  tzInput.value = 0;
+  rxInput.value = 45;
+  ryInput.value = 0;
+  rzInput.value = 0;
+  sxInput.value = 1;
+  syInput.value = 1;
+  szInput.value = 1;
+  updateAR();
+  console.log("T + R: Position (1.5, 1, 0), Rotation 45°");
+}
+
+function showTRS() {
+  // T + R + S: Full composition
+  txInput.value = 1.5;
+  tyInput.value = 1;
+  tzInput.value = 0;
+  rxInput.value = 45;
+  ryInput.value = 0;
+  rzInput.value = 0;
+  sxInput.value = 1.5;
+  syInput.value = 1.5;
+  szInput.value = 1.5;
+  updateAR();
+  console.log("T + R + S: Full transformation");
+}
+
+function toggleOrder() {
+  // T×R×S vs S×R×T: Show different final positions
+  if (!isReversedOrder) {
+    // S×R×T order: Scale first, then rotate, then translate
+    sxInput.value = 2;
+    syInput.value = 2;
+    szInput.value = 2;
+    rxInput.value = 0;
+    ryInput.value = 45;
+    rzInput.value = 0;
+    txInput.value = 3; // Translation effect is larger because object is scaled
+    tyInput.value = 0;
+    tzInput.value = 0;
+    isReversedOrder = true;
+    console.log("S × R × T: Scale 2x, Rotate 45°, Position (3, 0, 0)");
+  } 
+  else {
+    // T×R×S order: Translate first, then rotate, then scale
+    txInput.value = 1; // Smaller translation
+    tyInput.value = 0;
+    tzInput.value = 0;
+    rxInput.value = 45;
+    ryInput.value = 0;
+    rzInput.value = 0;
+    sxInput.value = 2;
+    syInput.value = 2;
+    szInput.value = 2;
+    isReversedOrder = false;
+    console.log("T × R × S: Position (1, 0, 0), Rotate 45°, Scale 2x");
+  }
+  
+  updateAR();
+}
+</script>
+
+</body>
+</html> 

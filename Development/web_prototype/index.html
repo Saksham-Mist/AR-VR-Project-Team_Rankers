@@ -2,133 +2,248 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3D Transformation Learning Environment</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.5/three.js/ar.js"></script>
 <script src="main.js" defer></script>
-
 <style>
 body {
-  margin:0;
+  margin: 0;
   font-family: 'Segoe UI', Arial, sans-serif;
-  background:#0f172a;
-  color:#e5e7eb;
+  background: #0f172a;
+  color: #e5e7eb;
+  overflow: hidden;
 }
 
 #container {
-  display:flex;
-  height:100vh;
+  display: flex;
+  height: 100vh;
 }
 
 #scene {
-  flex:3;
+  flex: 3;
+  position: relative;
+}
+
+#scene::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 3px solid #3fa7ff;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: inset 0 0 30px rgba(63, 167, 255, 0.2);
+}
+
+#arStatus {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 100;
+  color: #3fa7ff;
 }
 
 #controls {
-  flex:1;
-  padding:20px;
-  background:#1e293b;
-  overflow-y:auto;
-  box-shadow: -5px 0 20px rgba(0,0,0,0.4);
+  flex: 1;
+  padding: 20px;
+  background: #1e293b;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.4);
+  z-index: 50;
+  max-height: 100vh;
 }
 
 h2, h3 {
-  margin-top:18px;
-  color:#3fa7ff;
+  margin-top: 18px;
+  color: #3fa7ff;
 }
 
 input[type="range"] {
-  width:100%;
-  margin-top:5px;
-  margin-bottom:15px;
+  width: 100%;
+  margin-top: 5px;
+  margin-bottom: 15px;
 }
 
 label {
-  font-size:14px;
+  font-size: 14px;
 }
 
 button {
-  padding:8px 14px;
-  background:#3fa7ff;
-  color:white;
-  border:none;
-  border-radius:4px;
-  cursor:pointer;
-  margin-top:10px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #3fa7ff 0%, #2b8ce6 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(63, 167, 255, 0.3);
 }
 
 button:hover {
-  background:#2b8ce6;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(63, 167, 255, 0.5);
+}
+
+button:active {
+  transform: translateY(0);
 }
 
 pre, #history {
-  background:#0f172a;
-  padding:10px;
-  font-size:12px;
-  border-radius:4px;
-  margin-top:10px;
+  background: #0f172a;
+  padding: 10px;
+  font-size: 11px;
+  border-radius: 4px;
+  margin-top: 10px;
+  font-family: 'Courier New', monospace;
 }
 
 #history {
-  max-height:120px;
-  overflow:auto;
+  max-height: 120px;
+  overflow: auto;
 }
+
+.section-group {
+  margin-bottom: 20px;
+}
+
+#modeToggle {
+  background: #10b981;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+#modeToggle:hover {
+  background: #059669;
+}
+
+@media (max-width: 1024px) {
+  button {
+    padding: 6px 8px;
+    font-size: 12px;
+    margin-top: 6px;
+  }
+}
+
 </style>
 </head>
 
 <body>
 
 <div id="container">
-<div id="scene"></div>
+  <div id="scene">
+    <div id="arStatus">🔴 Camera initializing...</div>
+  </div>
 
-<div id="controls">
+  <div id="controls">
+    <div style="background: linear-gradient(135deg, #3fa7ff 0%, #2b8ce6 100%); padding: 12px; border-radius: 6px; margin-bottom: 15px; text-align: center; font-weight: 600;">📊 DESKTOP MODE</div>
+    <button id="modeToggle" onclick="window.location.href='ar-mode.html'">📷 START AR MODE</button>
 
-<h2>Translation</h2>
-X <input type="range" id="tx" min="-5" max="5" step="0.1" value="0">
-Y <input type="range" id="ty" min="-5" max="5" step="0.1" value="0">
-Z <input type="range" id="tz" min="-5" max="5" step="0.1" value="0">
+    <div class="section-group" style="display:none;">
+      <div style="background: rgba(63, 167, 255, 0.1); padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 12px; border-left: 3px solid #3fa7ff;">
+      <strong>💡 Tip:</strong> Drag cube left-click, scroll to move forward/back, or go to AR mode for hand tracking!
+    </div>
+      <h2>Translation</h2>
+      <label>X</label>
+      <input type="range" id="tx" min="-5" max="5" step="0.1" value="0">
+      <label>Y</label>
+      <input type="range" id="ty" min="-5" max="5" step="0.1" value="0">
+      <label>Z</label>
+      <input type="range" id="tz" min="-5" max="5" step="0.1" value="0">
+    </div>
 
-<h2>Rotation</h2>
-X <input type="range" id="rx" min="0" max="360" value="0">
-Y <input type="range" id="ry" min="0" max="360" value="0">
-Z <input type="range" id="rz" min="0" max="360" value="0">
+    <div class="section-group">
+      <h2>Rotation</h2>
+      <label>X</label>
+      <input type="range" id="rx" min="0" max="360" value="0">
+      <label>Y</label>
+      <input type="range" id="ry" min="0" max="360" value="0">
+      <label>Z</label>
+      <input type="range" id="rz" min="0" max="360" value="0">
+    </div>
 
-<h2>Scale (Data Dimensions)</h2>
-X <input type="range" id="sx" min="0.5" max="3" step="0.1" value="1">
-Y <input type="range" id="sy" min="0.5" max="3" step="0.1" value="1">
-Z <input type="range" id="sz" min="0.5" max="3" step="0.1" value="1">
+    <div class="section-group">
+      <h2>Scale (Data Dimensions)</h2>
+      <label>X</label>
+      <input type="range" id="sx" min="0.5" max="3" step="0.1" value="1">
+      <label>Y</label>
+      <input type="range" id="sy" min="0.5" max="3" step="0.1" value="1">
+      <label>Z</label>
+      <input type="range" id="sz" min="0.5" max="3" step="0.1" value="1">
+    </div>
 
-<!-- 🔥 NEW SECTION -->
-<h2>Dataset Mapping</h2>
+    <div class="section-group">
+      <h2>Shape Selection</h2>
+      <button onclick="changeShape('box')">📦 Cube</button>
+      <button onclick="changeShape('tetrahedron')">🔺 Tetra</button>
+      <button onclick="changeShape('octahedron')">⬥ Octa</button>
+      <button onclick="changeShape('dodecahedron')">⬡ Dodeca</button>
+      <button onclick="changeShape('icosahedron')">⬢ Icosa</button>
+    </div>
 
-<select id="datasetSelect">
-  <option value="">Select Dataset</option>
-  <option value="A">Company A</option>
-  <option value="B">Company B</option>
-  <option value="C">Company C</option>
-</select>
+    <div class="section-group">
+  <h2>Camera Controls</h2>
+  <label>Cam X</label>
+  <input type="range" id="camX" min="-10" max="10" step="0.5" value="0">
+  <label>Cam Y</label>
+  <input type="range" id="camY" min="-10" max="10" step="0.5" value="0">
+  <label>Cam Z</label>
+  <input type="range" id="camZ" min="-10" max="20" step="0.5" value="8">
+    </div>
 
-<div id="dataInfo">
-  Feature A: -<br>
-  Feature B: -<br>
-  Feature C: -
-</div>
 
-<br>
-<label><input type="checkbox" checked onchange="toggleAxes(this.checked)"> Show Axes</label><br>
-<label><input type="checkbox" checked onchange="toggleBreakdown(this.checked)"> Show Matrix Breakdown</label>
+    <!-- <div class="section-group">
+      <h2>Dataset Mapping</h2>
+      <label for="datasetSelect">Select Dataset:</label>
+      <select id="datasetSelect" style="width: 100%; padding: 8px; margin-top: 8px;">
+        <option value="">-- None --</option>
+        <option value="A">Company A</option>
+        <option value="B">Company B</option>
+        <option value="C">Company C</option>
+      </select>
+      <div id="dataInfo" style="margin-top: 10px; font-size: 13px;">
+        Feature A: -<br>
+        Feature B: -<br>
+        Feature C: -
+      </div>
+    </div> -->
 
-<br>
-<button onclick="resetObject()">Reset</button>
-<br><br>
-<button onclick="openAR()">Open Camera Mode</button>
+    <div class="section-group">
+      <label><input type="checkbox" id="axesToggle" checked> Show Axes</label><br>
+      <label><input type="checkbox" id="breakdownToggle" checked> Show Matrix Breakdown</label>
+    </div>
 
-<h3>Transformation Matrix</h3>
-<pre id="matrixDisplay"></pre>
+    <button onclick="resetObject()">🔄 Reset</button>
 
-<h3>Transformation History</h3>
-<div id="history"></div>
+    <h3>Transformation Matrix</h3>
+    <pre id="matrixDisplay"></pre>
 
-</div>
+    <h3>Decomposed Matrices</h3>
+    <pre id="decomposedMatrices"></pre>
+
+    <h3>History</h3>
+    <div id="history"></div>
+
+    <div class="section-group">
+    <h2>Guided Scenarios</h2>
+    <button onclick="preset('rotate')">Rotate in View</button>
+    <button onclick="preset('camera')">Move Camera</button>
+    <button onclick="preset('scale')">Scale in View</button>
+    <button onclick="preset('behind')">Behind Camera</button>
+    </div>
+  </div>
 </div>
 
 </body>
