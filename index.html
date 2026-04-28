@@ -6,6 +6,8 @@
 <title>3D Geometric Transformation Visualizer</title>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
 * {
   margin: 0;
   padding: 0;
@@ -14,175 +16,302 @@
 
 body {
   font-family: 'Segoe UI', -apple-system, sans-serif;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(-45deg, #0a0e27, #1a0033, #2d0052, #0f172a);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
   color: #e5e7eb;
   min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Floating background elements */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(14, 165, 233, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23a855f7' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.03;
+  animation: drift 20s linear infinite;
+}
+
+@keyframes drift {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(60px, 60px); }
 }
 
 .container {
   display: flex;
   min-height: 100vh;
+  position: relative;
+  z-index: 1;
 }
 
-/* LEFT ACCORDION SIDEBAR */
+/* SIDEBAR */
 .sidebar {
   width: 320px;
-  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
   padding: 0;
   position: fixed;
   height: 100vh;
   overflow-y: auto;
-  border-right: 2px solid #3fa7ff;
-  box-shadow: 0 0 30px rgba(63, 167, 255, 0.2);
+  border-right: 2px solid;
+  border-image: linear-gradient(180deg, #a855f7 0%, #ec4899 50%, #0ea5e9 100%) 1;
+  box-shadow: 0 0 40px rgba(168, 85, 247, 0.3), inset 0 0 40px rgba(168, 85, 247, 0.05);
+  backdrop-filter: blur(10px);
 }
 
 .sidebar-header {
-  background: linear-gradient(135deg, #3fa7ff 0%, #0ea5e9 100%);
-  padding: 25px;
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #06b6d4 100%);
+  padding: 30px 25px;
   text-align: center;
   color: white;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.sidebar-header span {
+  position: relative;
+  z-index: 1;
 }
 
 .accordion-item {
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
 }
 
 .accordion-header {
   padding: 18px 20px;
-  background: #1e293b;
+  background: rgba(30, 41, 59, 0.6);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-weight: 600;
   color: #cbd5e1;
+  position: relative;
+  overflow: hidden;
+}
+
+.accordion-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.2), transparent);
+  transition: left 0.5s;
 }
 
 .accordion-header:hover {
-  background: #334155;
-  color: #3fa7ff;
+  background: rgba(51, 65, 85, 0.8);
+  color: #a855f7;
   padding-left: 25px;
 }
 
 .accordion-header.active {
-  background: linear-gradient(90deg, #3fa7ff 0%, rgba(63, 167, 255, 0.1) 100%);
-  color: #38bdf8;
-  border-left: 4px solid #3fa7ff;
+  background: linear-gradient(90deg, rgba(168, 85, 247, 0.3) 0%, rgba(236, 72, 153, 0.2) 100%);
+  color: #a855f7;
+  border-left: 4px solid #a855f7;
   padding-left: 16px;
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
 }
 
 .accordion-icon {
-  transition: transform 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-size: 18px;
 }
 
 .accordion-header.active .accordion-icon {
   transform: rotate(180deg);
+  color: #ec4899;
 }
 
 .accordion-content {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.4s ease;
-  background: #0f172a;
+  transition: max-height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: rgba(15, 23, 42, 0.6);
   padding: 0;
 }
 
 .accordion-content.active {
-  max-height: 1000px;
-  padding: 15px 0;
+  max-height: 2000px;
+  padding: 20px 0;
 }
 
 .accordion-text {
   padding: 12px 25px;
   color: #cbd5e1;
   font-size: 14px;
-  line-height: 1.6;
-  border-left: 3px solid #3fa7ff;
+  line-height: 1.7;
+  border-left: 3px solid #a855f7;
   margin-bottom: 15px;
+  animation: fadeInText 0.5s ease;
 }
 
-/* Nested articles dropdown */
+@keyframes fadeInText {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Articles dropdown */
 .articles-dropdown {
   padding: 0 20px 15px 20px;
 }
 
 .articles-btn {
   width: 100%;
-  padding: 10px 12px;
-  background: #1e293b;
-  color: #0ea5e9;
-  border: 1px solid #334155;
-  border-radius: 4px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(236, 72, 153, 0.15) 100%);
+  color: #a855f7;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  transition: all 0.2s;
+  transition: all 0.3s;
   margin-bottom: 8px;
   text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.articles-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(236, 72, 153, 0.2);
+  transition: left 0.3s;
 }
 
 .articles-btn:hover {
-  background: #334155;
-  color: #38bdf8;
-  border-color: #3fa7ff;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(236, 72, 153, 0.3) 100%);
+  color: #ec4899;
+  border-color: #ec4899;
+  transform: translateX(5px);
 }
 
 .article-links {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease;
+  transition: max-height 0.4s ease;
   padding-left: 0;
 }
 
 .article-links.active {
-  max-height: 400px;
+  max-height: 500px;
   padding-left: 15px;
 }
 
 .article-links a {
   display: block;
-  padding: 8px 10px;
+  padding: 10px 12px;
   color: #cbd5e1;
   text-decoration: none;
   font-size: 13px;
-  border-left: 2px solid #3fa7ff;
+  border-left: 2px solid transparent;
   margin-bottom: 6px;
-  transition: all 0.2s;
+  transition: all 0.3s;
   cursor: pointer;
+  position: relative;
+}
+
+.article-links a::before {
+  content: '✨';
+  position: absolute;
+  left: 0;
+  opacity: 0;
+  transition: all 0.3s;
 }
 
 .article-links a:hover {
-  color: #38bdf8;
-  padding-left: 15px;
-  border-left-color: #0ea5e9;
+  color: #a855f7;
+  padding-left: 20px;
+  border-left-color: #a855f7;
+}
+
+.article-links a:hover::before {
+  opacity: 1;
 }
 
 /* MAIN CONTENT */
 .main-content {
   margin-left: 320px;
-  padding: 50px 60px;
+  padding: 60px 80px;
   flex: 1;
-  max-width: 1000px;
+  max-width: 1200px;
 }
 
 .content-section {
   display: none;
-  animation: fadeIn 0.5s ease;
+  animation: slideInContent 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .content-section.active {
   display: block;
 }
 
-@keyframes fadeIn {
+@keyframes slideInContent {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -191,104 +320,199 @@ body {
 }
 
 h1 {
-  font-size: 32px;
-  margin-bottom: 20px;
-  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+  font-size: 42px;
+  margin-bottom: 25px;
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #06b6d4 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  font-weight: 800;
+  letter-spacing: -1px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 }
 
 h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
-  color: #38bdf8;
-  border-bottom: 2px solid #334155;
-  padding-bottom: 10px;
+  font-size: 26px;
+  margin: 40px 0 20px 0;
+  color: #a855f7;
+  border-bottom: 2px solid;
+  border-image: linear-gradient(90deg, #a855f7, #ec4899) 1;
+  padding-bottom: 12px;
+  position: relative;
+}
+
+h2::before {
+  content: '✦';
+  margin-right: 10px;
+  color: #ec4899;
 }
 
 p {
-  margin-bottom: 15px;
-  line-height: 1.7;
+  margin-bottom: 18px;
+  line-height: 1.8;
   color: #cbd5e1;
-  font-size: 15px;
+  font-size: 16px;
+  transition: all 0.3s;
+}
+
+p:hover {
+  color: #f1f5f9;
+  padding-left: 10px;
 }
 
 ul {
-  margin-left: 20px;
-  margin-bottom: 15px;
+  margin-left: 25px;
+  margin-bottom: 20px;
 }
 
 ul li {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   color: #cbd5e1;
+  position: relative;
+  padding-left: 15px;
 }
 
-/* BUTTONS */
+ul li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: #a855f7;
+  font-weight: bold;
+}
+
+/* BUTTON */
 .button {
   display: inline-block;
-  margin-top: 20px;
-  padding: 14px 32px;
-  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
-  color: #0f172a;
+  margin-top: 25px;
+  padding: 16px 40px;
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  color: white;
   font-weight: 700;
-  border-radius: 8px;
+  border-radius: 10px;
   text-decoration: none;
-  transition: all 0.3s;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   cursor: pointer;
   border: none;
   font-size: 15px;
-  box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+  box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4), 0 0 20px rgba(236, 72, 153, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
 }
 
 .button:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 35px rgba(168, 85, 247, 0.6), 0 0 30px rgba(236, 72, 153, 0.4);
+}
+
+.button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.button:active {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
 }
 
 /* PROGRESS TRACKER */
 .progress-tracker {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  padding: 20px;
-  border-radius: 8px;
-  border-left: 4px solid #3fa7ff;
-  margin-top: 20px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(236, 72, 153, 0.1) 100%);
+  padding: 30px;
+  border-radius: 12px;
+  border: 2px solid rgba(168, 85, 247, 0.3);
+  margin-top: 30px;
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.2), inset 0 0 30px rgba(168, 85, 247, 0.05);
+  backdrop-filter: blur(10px);
 }
 
 .progress-item {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .progress-label {
   font-weight: 600;
-  color: #38bdf8;
-  margin-bottom: 5px;
+  color: #a855f7;
+  margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .progress-bar {
   width: 100%;
-  height: 8px;
-  background: #334155;
-  border-radius: 4px;
+  height: 10px;
+  background: rgba(51, 65, 85, 0.5);
+  border-radius: 10px;
   overflow: hidden;
+  border: 1px solid rgba(168, 85, 247, 0.2);
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #38bdf8 0%, #0ea5e9 100%);
-  border-radius: 4px;
+  background: linear-gradient(90deg, #a855f7 0%, #ec4899 50%, #06b6d4 100%);
+  border-radius: 10px;
+  animation: fillProgress 2s ease-out forwards;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.8);
+}
+
+@keyframes fillProgress {
+  from { width: 0%; }
 }
 
 /* FOOTER */
 footer {
   text-align: center;
-  padding: 30px;
-  margin-top: 50px;
-  border-top: 1px solid #334155;
+  padding: 40px;
+  margin-top: 60px;
+  border-top: 2px solid rgba(168, 85, 247, 0.2);
   color: #64748b;
-  font-size: 13px;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+footer::before {
+  content: '◆ ◆ ◆';
+  display: block;
+  color: #a855f7;
+  margin-bottom: 15px;
+  letter-spacing: 10px;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #a855f7, #ec4899);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ec4899, #06b6d4);
 }
 
 /* RESPONSIVE */
@@ -299,7 +523,7 @@ footer {
   
   .main-content {
     margin-left: 280px;
-    padding: 40px;
+    padding: 40px 50px;
   }
 }
 
@@ -313,12 +537,21 @@ footer {
     height: auto;
     position: relative;
     border-right: none;
-    border-bottom: 2px solid #3fa7ff;
+    border-bottom: 2px solid;
+    border-image: linear-gradient(90deg, #a855f7, #ec4899) 1;
   }
   
   .main-content {
     margin-left: 0;
     padding: 30px 20px;
+  }
+  
+  h1 {
+    font-size: 28px;
+  }
+  
+  h2 {
+    font-size: 20px;
   }
 }
 </style>
@@ -328,56 +561,53 @@ footer {
 
 <div class="container">
 
-<!-- SIDEBAR ACCORDION -->
+<!-- SIDEBAR -->
 <div class="sidebar">
-  <div class="sidebar-header">📊 NAVIGATION</div>
+  <div class="sidebar-header"><span>✨ EXPEDITION MAP ✨</span></div>
   
   <!-- Overview -->
   <div class="accordion-item">
-    <div class="accordion-header" onclick="toggleAccordion(0)">
+    <div class="accordion-header" onclick="toggleAccordion(0, event)">
       <span>📋 Overview</span>
       <span class="accordion-icon">▼</span>
     </div>
     <div class="accordion-content">
       <div class="accordion-text">
-        An interactive 3D environment transforming abstract mathematical concepts into intuitive visual experiences. Supports transformation matrices, AR visualization, and real-time interaction.
+        A psychedelic journey through abstract mathematical spaces. Watch rigid geometric concepts transform into living, breathing visual experiences. Where algebra meets imagination.
       </div>
     </div>
   </div>
 
   <!-- Demo -->
   <div class="accordion-item">
-    <div class="accordion-header" onclick="toggleAccordion(1)">
+    <div class="accordion-header" onclick="toggleAccordion(1, event)">
       <span>🚀 Live Demo</span>
       <span class="accordion-icon">▼</span>
     </div>
     <div class="accordion-content">
       <div class="accordion-text">
-        Launch the interactive prototype to explore transformations in real-time.
+        Step into the dimensional space. Drag, pinch, tilt, and watch mathematics dance.
       </div>
       <div style="padding: 0 25px;">
-        <a class="button" href="https://graceful-scone-39af86.netlify.app/" target="_blank">Open Demo</a>
+        <a class="button" href="https://graphics-pipeline-visualiser.netlify.app/" target="_blank">Enter the Realm →</a>
       </div>
     </div>
   </div>
 
   <!-- How It Works -->
   <div class="accordion-item">
-    <div class="accordion-header" onclick="toggleAccordion(2)">
-      <span>⚙️ How It Works</span>
+    <div class="accordion-header" onclick="toggleAccordion(2, event)">
+      <span>⚙️ Dimensions</span>
       <span class="accordion-icon">▼</span>
     </div>
     <div class="accordion-content">
       <div class="accordion-text">
-        <strong>Features:</strong>
-        <ul style="margin: 10px 0 0 15px; color: #cbd5e1;">
-          <li>Real-time T/R/S transforms</li>
-          <li>Live matrix updates</li>
-          <li>5 Platonic solids</li>
-          <li>Gesture control (hand tracking)</li>
-          <li>Gimbal mode (device tilt)</li>
-          <li>Hiro marker AR</li>
-          <li>LA visualization</li>
+        <strong>Interaction Modes:</strong>
+        <ul style="margin: 12px 0 0 15px; color: #cbd5e1;">
+          <li>🖐️ Gesture Control — Hand tracking magic</li>
+          <li>🎮 Gimbal Mode — Device becomes controller</li>
+          <li>📍 Hiro AR — Real-world projection</li>
+          <li>⌨️ Keyboard — Arrow keys + Q/E</li>
         </ul>
       </div>
     </div>
@@ -385,37 +615,40 @@ footer {
 
   <!-- Development Blogs -->
   <div class="accordion-item">
-    <div class="accordion-header" onclick="toggleAccordion(3)">
-      <span>📝 Development</span>
+    <div class="accordion-header" onclick="toggleAccordion(3, event)">
+      <span>📝 Expedition Log</span>
       <span class="accordion-icon">▼</span>
     </div>
     <div class="accordion-content">
       <div class="articles-dropdown">
         <!-- Saksham -->
-        <button class="articles-btn" onclick="toggleArticles(this)">👤 Saksham</button>
+        <button class="articles-btn" onclick="toggleArticles(event)">👤 Saksham</button>
         <div class="article-links">
           <a href="https://sakshamsharma880460.substack.com/p/the-very-first-step" target="_blank">Week 1</a>
           <a href="https://sakshamsharma880460.substack.com/p/week-2-turning-theory-into-an-interactive" target="_blank">Week 2</a>
           <a href="https://sakshamsharma880460.substack.com/p/week-3-functional-prototype-to-structured" target="_blank">Week 3</a>
           <a href="https://sakshamsharma880460.substack.com/p/from-a-static-cube-to-an-interactive" target="_blank">Week 4</a>
+          <a href="#" target="_blank">Week 5 (Coming Soon)</a>
         </div>
 
         <!-- Daivik -->
-        <button class="articles-btn" onclick="toggleArticles(this)">👤 Daivik</button>
+        <button class="articles-btn" onclick="toggleArticles(event)">👤 Daivik</button>
         <div class="article-links">
           <a href="https://daivikpathak.substack.com/p/vr-based-geometric-transformation" target="_blank">Week 1</a>
           <a href="https://substack.com/@daivikpathak/note/c-215194520" target="_blank">Week 2</a>
           <a href="https://substack.com/@daivikpathak/note/c-219406407" target="_blank">Week 3</a>
           <a href="https://substack.com/@daivikpathak/note/c-235436052" target="_blank">Week 4</a>
+          <a href="#" target="_blank">Week 5 (Coming Soon)</a>
         </div>
 
         <!-- Shourya -->
-        <button class="articles-btn" onclick="toggleArticles(this)">👤 Shourya</button>
+        <button class="articles-btn" onclick="toggleArticles(event)">👤 Shourya</button>
         <div class="article-links">
           <a href="https://shouryakapoor.substack.com/p/avr-project" target="_blank">Week 1</a>
           <a href="https://substack.com/@shouryakapoor/note/c-215194123" target="_blank">Week 2</a>
           <a href="https://substack.com/@shouryakapoor/note/c-219415815" target="_blank">Week 3</a>
           <a href="https://substack.com/@shouryakapoor/note/c-235379634?r=7hs6ir" target="_blank">Week 4</a>
+          <a href="#" target="_blank">Week 5 (Coming Soon)</a>
         </div>
       </div>
     </div>
@@ -423,29 +656,29 @@ footer {
 
   <!-- Future Scope -->
   <div class="accordion-item">
-    <div class="accordion-header" onclick="toggleAccordion(4)">
-      <span>🎯 Future Scope</span>
+    <div class="accordion-header" onclick="toggleAccordion(4, event)">
+      <span>🌌 Beyond</span>
       <span class="accordion-icon">▼</span>
     </div>
     <div class="accordion-content">
       <div class="accordion-text">
-        Extend toward intelligent object recognition, deeper AR interaction, and real-world object mapping into transformation space. Integration with computer vision for automatic geometry detection.
+        Object recognition. Real-world geometry extraction. AR-powered mathematics where your environment becomes the equation. The boundary between digital and physical dissolves.
       </div>
     </div>
   </div>
 
   <!-- Repository -->
   <div class="accordion-item">
-    <div class="accordion-header" onclick="toggleAccordion(5)">
-      <span>💻 Repository</span>
+    <div class="accordion-header" onclick="toggleAccordion(5, event)">
+      <span>💻 Source</span>
       <span class="accordion-icon">▼</span>
     </div>
     <div class="accordion-content">
       <div class="accordion-text">
-        Full source code and documentation.
+        All source code, documentation, and development notes.
       </div>
       <div style="padding: 0 25px;">
-        <a class="button" href="https://github.com/Saksham-Mist/AR-VR-Project-Team_Rankers" target="_blank">View Repo</a>
+        <a class="button" href="https://github.com/Saksham-Mist/AR-VR-Project-Team_Rankers" target="_blank">Explore Code →</a>
       </div>
     </div>
   </div>
@@ -454,78 +687,102 @@ footer {
 <!-- MAIN CONTENT -->
 <div class="main-content">
 
-  <!-- Overview Content -->
+  <!-- Overview -->
   <div class="content-section active">
-    <h1>3D Geometric Transformation Visualizer</h1>
-    <p>An interactive AR/VR learning environment that transforms abstract mathematical concepts into intuitive visual experiences.</p>
-    <p>What started as a simple cube-based system evolved into a dynamic platform supporting:</p>
+    <h1>✦ 3D Geometric Transformation Visualizer ✦</h1>
+    <p>
+      Mathematics has always lived in the abstract. Transformations, matrices, eigenvectors—they exist as pure numbers on a page. But what if they had a face? A voice? A dance?
+    </p>
+    <p>
+      This is an interactive AR/VR environment where abstract mathematical concepts transcend the textbook and become intuitive visual experiences. Drag a cube, watch it rotate in real-time. Pinch your fingers, see the scale change. Tilt your phone, witness geometric transformations unfold in your physical space.
+    </p>
+    
+    <h2>The Journey</h2>
+    <p>
+      What began as a simple three-dimensional cube evolved into a dynamic platform supporting:
+    </p>
     <ul>
-      <li>Multiple Platonic geometries</li>
-      <li>Real-time transformation visualization</li>
-      <li>Linear algebra decomposition</li>
-      <li>Gesture-based interaction</li>
-      <li>Augmented reality projection</li>
+      <li>Five Platonic solids (cube, tetrahedron, octahedron, dodecahedron, icosahedron)</li>
+      <li>Real-time transformation matrices (translation, rotation, scaling)</li>
+      <li>Linear algebra decomposition and composition</li>
+      <li>Hand gesture recognition (pinch, grab, swipe)</li>
+      <li>Device gimbal control (accelerometer-based)</li>
+      <li>Augmented reality with Hiro marker detection</li>
+      <li>Coordinate space visualization (model, world, view, clip)</li>
     </ul>
-    <h2 style="margin-top: 40px;">Project Progress</h2>
+
+    <h2>Progress Snapshot</h2>
     <div class="progress-tracker">
       <div class="progress-item">
-        <div class="progress-label"><span>Four-Viewport System</span><span>100%</span></div>
+        <div class="progress-label"><span>Four-Viewport System</span><span>✓ 100%</span></div>
         <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
       </div>
       <div class="progress-item">
-        <div class="progress-label"><span>Cursor Control & Sync</span><span>100%</span></div>
+        <div class="progress-label"><span>Cursor & Scroll Control</span><span>✓ 100%</span></div>
         <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
       </div>
       <div class="progress-item">
-        <div class="progress-label"><span>Linear Algebra Features</span><span>100%</span></div>
+        <div class="progress-label"><span>Linear Algebra Suite</span><span>✓ 100%</span></div>
         <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
       </div>
       <div class="progress-item">
-        <div class="progress-label"><span>Gesture Control (Hand Tracking)</span><span>100%</span></div>
+        <div class="progress-label"><span>Gesture Recognition</span><span>✓ 100%</span></div>
         <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
       </div>
       <div class="progress-item">
-        <div class="progress-label"><span>Gimbal Mode</span><span>100%</span></div>
+        <div class="progress-label"><span>Gimbal Mode</span><span>✓ 100%</span></div>
         <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
       </div>
       <div class="progress-item">
-        <div class="progress-label"><span>AR/Hiro Integration</span><span>100%</span></div>
+        <div class="progress-label"><span>AR Integration</span><span>✓ 100%</span></div>
         <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
       </div>
     </div>
   </div>
 
   <footer>
-    © 2026 Team Rankers | AR/VR Geometric Transformation Research Project
+    ◆ Crafted by Team Rankers | AR/VR Transformation Research ◆
   </footer>
 </div>
 
 </div>
 
 <script>
-function toggleAccordion(index) {
+let activeAccordion = 0;
+
+function toggleAccordion(index, event) {
+  event.stopPropagation();
+  
   const headers = document.querySelectorAll('.accordion-header');
   const contents = document.querySelectorAll('.accordion-content');
   
-  // Close all
-  headers.forEach((h, i) => {
-    h.classList.remove('active');
-    contents[i].classList.remove('active');
-  });
-  
-  // Open clicked
-  headers[index].classList.add('active');
-  contents[index].classList.add('active');
+  if (activeAccordion === index) {
+    // Close if clicking same
+    headers[index].classList.remove('active');
+    contents[index].classList.remove('active');
+    activeAccordion = -1;
+  } else {
+    // Close previous, open new
+    if (activeAccordion !== -1) {
+      headers[activeAccordion].classList.remove('active');
+      contents[activeAccordion].classList.remove('active');
+    }
+    headers[index].classList.add('active');
+    contents[index].classList.add('active');
+    activeAccordion = index;
+  }
 }
 
-function toggleArticles(btn) {
-  const links = btn.nextElementSibling;
+function toggleArticles(event) {
+  event.stopPropagation();
+  const links = event.target.nextElementSibling;
   links.classList.toggle('active');
 }
 
 // Open first accordion on load
 document.addEventListener('DOMContentLoaded', () => {
-  toggleAccordion(0);
+  document.querySelector('.accordion-header').classList.add('active');
+  document.querySelector('.accordion-content').classList.add('active');
 });
 </script>
 
