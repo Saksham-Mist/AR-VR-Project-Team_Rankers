@@ -110,6 +110,18 @@ All solids follow the same transformation pipeline, demonstrating consistency ac
 ### AR Interaction View
 ![AR View for Platonic Solids](Assets/Screenshots/Final_prototype.png)
 
+### Gesture Controls
+![Hand tracking](Assets/Screenshots/hand-gesture.png)
+
+### Gimbal Implementation
+![Gimbal for laptop(just keys)](Assets/Screenshots/gimbal.png)
+
+### Transformation Sequences for matrix Multiplication
+![Sequence 1](Assets/Screenshots/transformation-sequence1.png)
+
+![Sequence 2](Assets/Screenshots/transformation-sequence2.png)
+
+
 ---
 
 ## AR Integration
@@ -120,7 +132,9 @@ All solids follow the same transformation pipeline, demonstrating consistency ac
 3. Selected Platonic solid is displayed in AR  
 4. User confirms selection  
 5. Object is transferred to main scene  
-6. Transformations are applied normally  
+6. Transformations are applied normally
+7. Hand Tracking that visually shows the rotation and movement
+8. Gimbal implementation (partial) to make use of accelerometer
 
 ---
 
