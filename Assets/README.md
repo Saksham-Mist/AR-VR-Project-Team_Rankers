@@ -1,100 +1,71 @@
 # 📦 Project Assets & Media
 
-This directory contains the visual media, documentation graphics, and prototype screenshots used throughout the development of the 3D Geometric Transformation Visualization Environment.
-
-Assets are divided into two categories:
-
-1. Documentation Assets (Current Phase)
-2. Planned Runtime Assets (Future Unity VR Phase)
+This directory contains the visual, interactive, and media components used in the development of the **3D Geometric Transformation Visualizer**. These assets support both the web-based prototype and extended AR/gesture-based modules.
 
 ---
 
-## 1️⃣ Documentation Assets (Current)
+## 1. Visual Assets
 
-These assets support:
+The project primarily utilizes procedurally generated 3D objects using Three.js, including:
 
-- GitHub documentation
-- Blog articles
-- Research explanation
-- README previews
-- WordPress integration
+- Cube (primary transformation object)
+- Coordinate axes (X, Y, Z – RGB-coded)
+- Grid helpers for spatial reference
+- Platonic solids (extended implementation)
 
-### Included Media
-
-- Prototype screenshots (Web-based 3D visualization)
-- AI-generated concept art for VR environment previews
-- Interface mockups
-- Diagram exports
-
-### Purpose
-
-These visuals:
-
-- Demonstrate project progress
-- Provide visual proof-of-concept
-- Improve documentation clarity
-- Help explain transformation logic visually
+Additionally, screenshots and AI-generated concept visuals are stored here to document development progress and UI evolution.
 
 ---
 
-## 2️⃣ Prototype Visual Assets
+## 2. AR & Interaction Assets
 
-The current web prototype includes:
+For augmented reality and gesture-based interaction:
 
-- 3D cube visualization
-- Color-coded coordinate axes
-- Real-time matrix display UI
+- **Hiro Marker**: Used for AR.js marker-based tracking
+- Camera input stream for real-time AR rendering
+- Hand landmark data (via MediaPipe) for gesture detection
 
-Axis color logic follows industry standard conventions:
-
-| Axis | Color | Purpose |
-|------|--------|----------|
-| X | Red | Transformation along X |
-| Y | Green | Transformation along Y |
-| Z | Blue | Transformation along Z |
-
-This visual consistency ensures seamless transition into future Unity implementation.
+These assets enable physical interaction with virtual objects through pinch, grab, and swipe gestures.
 
 ---
 
-## 3️⃣ Planned Unity Runtime Assets (Future Phase)
+## 3. UI & Visualization Elements
 
-Upon transition to full VR implementation, this directory will include:
+- Slider controls for transformation input
+- Matrix display panels for real-time updates
+- Multi-viewport rendering layouts (top, side, perspective)
+- Ghost object reference (baseline comparison)
 
-### 3D Models
-- Training Cube (.fbx)
-- Coordinate Axes Models
-- Controller-tracked Hand Models
-- Low-poly environment scene
-
-### Textures & Materials
-- Optimized albedo and emissive maps
-- URP-compatible materials
-- Texture atlasing for draw-call reduction
-
-### UI Components
-- World-space UI panels
-- TextMeshPro SDF fonts
-- Mode selection icons
-
-### Audio & Haptics
-- Spatialized interaction sounds
-- Haptic feedback configurations for object grabbing
-- Transformation confirmation audio cues
+These elements are designed to reinforce conceptual understanding rather than purely aesthetic design.
 
 ---
 
-## 4️⃣ Asset Optimization Philosophy (Planned)
+## 4. Audio & Feedback (Planned)
 
-To maintain high performance in VR:
+While not fully implemented, future iterations may include:
 
-- Low-poly mesh design
-- LOD (Level of Detail) groups for environments
-- Baked lighting where applicable
-- Quaternion-based rotation logic for stability
-- Target frame rate: 72–90 FPS
+- Interaction feedback sounds
+- Haptic responses (in VR environments)
 
 ---
 
-## 5️⃣ Current Folder Structure
+## 5. Optimization Strategy
 
+To maintain performance across devices:
+
+- Low-complexity geometries are used
+- Real-time rendering is optimized via WebGL
+- AR marker tracking is stabilized using smoothing techniques
+
+---
+
+## 📂 Folder Structure
+
+Assets/
+├── screenshots/      # UI and prototype captures  
+├── visuals/          # AI-generated or conceptual images  
+├── markers/          # AR marker images (Hiro marker)  
+
+---
+
+This directory serves as both a development reference and a visual documentation layer for the project.
