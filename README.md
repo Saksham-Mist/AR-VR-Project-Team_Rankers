@@ -14,7 +14,7 @@
 
 - **[Live Demo](https://graphics-pipeline-visualiser.netlify.app/)** — Try it now
 - **[Project Showcase](https://saksham-mist.github.io/AR-VR-Project-Team_Rankers/)** — Full documentation & team blogs
-- **[Final Report](./3D_Transformation_Visualizer_Final_Report.docx)** — Technical documentation
+- **[Final Report](Proposal/3D_Transformation_Visualizer_Final_Report.pdf)** — Technical documentation
 
 ---
 
@@ -238,7 +238,7 @@ AR-VR-Project-Team_Rankers/
 
 ## Documentation
 
-- **[Final Report](./3D_Transformation_Visualizer_Final_Report.docx)** — Technical documentation
+- **[Final Report](Proposal/3D_Transformation_Visualizer_Final_Report.pdf)** — Technical documentation
 - **[Project Showcase](https://saksham-mist.github.io/AR-VR-Project-Team_Rankers/)** — GitHub Pages site
 - **[Live Demo](https://graphics-pipeline-visualiser.netlify.app/)** — Working application
 
