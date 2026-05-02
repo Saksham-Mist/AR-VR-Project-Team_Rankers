@@ -1,250 +1,2045 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3D Transformation Learning Environment</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.5/three.js/ar.js"></script>
-<script src="main.js" defer></script>
+<title>Security Coverage Planner</title>
 <style>
-body {
-  margin: 0;
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: #0f172a;
-  color: #e5e7eb;
-  overflow: hidden;
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e14;--panel:#0f1520;--border:#1e2d45;
+  --accent:#00e5ff;--red:#ff3b3b;--green:#00ff88;--yellow:#ffc107;
+  --text:#c8d8e8;--dim:#4a6080;
 }
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column}
 
-#container {
-  display: flex;
-  height: 100vh;
+/* ── HEADER ── */
+header{display:flex;align-items:center;gap:14px;padding:8px 18px;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0;z-index:100}
+header h1{font-family:'Share Tech Mono',monospace;font-size:1rem;color:var(--accent);letter-spacing:2px}
+.badge{font-size:.65rem;padding:2px 7px;border-radius:2px;border:1px solid var(--accent);color:var(--accent);font-family:'Share Tech Mono',monospace}
+.badge-3d{border-color:var(--green);color:var(--green)}
+.goto-btn{margin-left:auto;display:flex;align-items:center;gap:8px;padding:7px 18px;border-radius:4px;border:1px solid var(--accent);background:rgba(0,229,255,.1);color:var(--accent);font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;letter-spacing:1px;transition:all .2s;position:relative;overflow:hidden}
+.goto-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(0,229,255,.15),transparent);transform:translateX(-100%);transition:transform .4s}
+.goto-btn:hover::before{transform:translateX(100%)}
+.goto-btn:hover{background:rgba(0,229,255,.2);box-shadow:0 0 20px rgba(0,229,255,.3)}
+.goto-btn .icon{font-size:1.1rem}
+
+/* ── MAIN LAYOUT ── */
+.main{display:flex;flex:1;overflow:hidden;position:relative}
+
+/* ── SIDEBAR ── */
+.sidebar{width:220px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:14px 11px;gap:14px;overflow-y:auto;transition:opacity .3s}
+.sidebar h2{font-size:.72rem;letter-spacing:2px;color:var(--dim);text-transform:uppercase;font-family:'Share Tech Mono',monospace}
+.slider-group{display:flex;flex-direction:column;gap:5px}
+.slider-group label{display:flex;justify-content:space-between;font-size:.82rem;color:var(--dim);font-family:'Share Tech Mono',monospace}
+.slider-group label span{color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
+.divider{border:none;border-top:1px solid var(--border)}
+.camera-list{display:flex;flex-direction:column;gap:5px}
+.camera-item{display:flex;align-items:center;justify-content:space-between;padding:6px 9px;border-radius:3px;background:rgba(0,229,255,.04);border:1px solid var(--border);font-size:.82rem;font-family:'Share Tech Mono',monospace}
+.del-btn{background:none;border:none;color:var(--red);cursor:pointer;font-size:.9rem;opacity:.7;transition:opacity .15s}
+.del-btn:hover{opacity:1}
+.stats{background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:4px;padding:9px 11px;font-family:'Share Tech Mono',monospace;font-size:.78rem;display:flex;flex-direction:column;gap:5px}
+.stat-row{display:flex;justify-content:space-between}
+.stat-row .label{color:var(--dim)}
+.stat-row .val{color:var(--accent)}
+.stat-row .val.red{color:var(--red)}
+.stat-row .val.green{color:var(--green)}
+.clear-btn{padding:8px 11px;border-radius:4px;border:1px solid var(--red);background:rgba(255,59,59,.08);color:var(--red);font-family:'Rajdhani',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:1px;width:100%}
+.clear-btn:hover{background:rgba(255,59,59,.2)}
+
+/* ── 2D CANVAS AREA ── */
+#canvas-wrap{flex:1;position:relative;overflow:hidden;background:linear-gradient(rgba(0,229,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.03) 1px,transparent 1px);background-size:40px 40px;background-color:#080c12}
+#main-canvas{display:block;position:absolute;top:0;left:0;cursor:crosshair}
+.hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--dim);background:rgba(10,14,20,.85);padding:5px 12px;border-radius:2px;border:1px solid var(--border);pointer-events:none;white-space:nowrap}
+
+/* ── 3D VIEW (full screen overlay) ── */
+#view3d{position:fixed;inset:0;z-index:200;background:#060a10;display:none;flex-direction:column;opacity:0;transition:opacity .4s}
+#view3d.active{display:flex;opacity:1}
+#three-wrap{flex:1;position:relative;overflow:hidden}
+#three-canvas{display:block;width:100%;height:100%}
+
+/* ── 2D MINI-MAP (when 3D is active) ── */
+#minimap{
+  position:fixed;top:60px;left:14px;z-index:300;
+  width:220px;height:180px;
+  background:rgba(10,14,20,.92);
+  border:1px solid var(--accent);border-radius:4px;
+  box-shadow:0 0 20px rgba(0,229,255,.2);
+  overflow:hidden;
+  transition:all .4s cubic-bezier(.4,0,.2,1);
+  cursor:pointer;
 }
+#minimap canvas{display:block;width:100%;height:100%}
+#minimap-label{position:absolute;top:5px;left:8px;font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--accent);letter-spacing:1px;pointer-events:none}
+#minimap-hint{position:absolute;bottom:5px;right:8px;font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--dim);pointer-events:none}
 
-#scene {
-  flex: 3;
-  position: relative;
+/* ── 3D HUD ── */
+#hud3d{position:fixed;top:0;left:0;right:0;z-index:301;display:flex;align-items:center;gap:12px;padding:8px 18px;background:rgba(10,14,20,.9);border-bottom:1px solid var(--border);backdrop-filter:blur(8px)}
+#hud3d h1{font-family:'Share Tech Mono',monospace;font-size:.9rem;color:var(--accent);letter-spacing:2px}
+.back-btn{display:flex;align-items:center;gap:7px;padding:6px 14px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;margin-left:auto}
+.back-btn:hover{border-color:var(--accent);color:var(--accent)}
+#cam-count-3d{font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--dim)}
+#cam-count-3d span{color:var(--accent)}
+
+/* 3D loading overlay */
+#loading3d{position:fixed;inset:0;z-index:400;background:#060a10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s}
+#loading3d.hidden{opacity:0;pointer-events:none}
+.load-bar{width:260px;height:2px;background:rgba(0,229,255,.15);border-radius:1px;overflow:hidden}
+.load-fill{height:100%;background:var(--accent);border-radius:1px;animation:loadPulse 1.4s ease-in-out infinite}
+@keyframes loadPulse{0%{width:0%;opacity:1}50%{width:70%;opacity:.8}100%{width:100%;opacity:0}}
+.load-text{font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--dim);letter-spacing:2px}
+
+/* selected panel */
+#sel-panel{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:302;background:rgba(10,14,20,.95);border:1px solid var(--accent);border-radius:6px;padding:12px 18px;flex-direction:column;gap:10px;min-width:300px;backdrop-filter:blur(10px);box-shadow:0 0 30px rgba(0,229,255,.15)}
+#sel-panel.visible{display:flex}
+#sel-panel h3{font-family:'Share Tech Mono',monospace;font-size:.75rem;color:var(--accent);letter-spacing:2px}
+.sel-row{display:flex;align-items:center;gap:10px}
+.sel-row label{font-family:'Share Tech Mono',monospace;font-size:.75rem;color:var(--dim);width:80px;flex-shrink:0}
+.sel-row input[type=range]{flex:1;accent-color:var(--accent)}
+.sel-row span{font-family:'Share Tech Mono',monospace;font-size:.75rem;color:var(--accent);width:40px;text-align:right}
+.del-cam-btn{padding:6px;border-radius:3px;border:1px solid var(--red);background:rgba(255,59,59,.1);color:var(--red);font-family:'Rajdhani',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;width:100%;letter-spacing:1px}
+.add-cam-3d-btn{margin-top:6px;padding:7px;border-radius:3px;border:1px solid var(--green);background:rgba(0,255,136,.08);color:var(--green);font-family:'Rajdhani',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;width:100%;letter-spacing:1px;transition:all .15s}
+.add-cam-3d-btn:hover{background:rgba(0,255,136,.2);box-shadow:0 0 14px rgba(0,255,136,.25)}
+
+/* drag indicator */
+.drag-hint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Share Tech Mono',monospace;font-size:.85rem;color:rgba(0,229,255,.5);pointer-events:none;transition:opacity .3s;z-index:299}
+@keyframes dtRipple{0%{transform:scale(.3);opacity:1}100%{transform:scale(2.5);opacity:0}}
+
+/* ── GESTURE MODE ── */
+#gesture-btn{
+  display:flex;align-items:center;gap:7px;padding:6px 14px;
+  border-radius:4px;border:1px solid var(--green);
+  background:rgba(0,255,136,.08);color:var(--green);
+  font-family:'Rajdhani',sans-serif;font-size:.9rem;font-weight:700;
+  cursor:pointer;transition:all .2s;letter-spacing:1px;margin-right:4px;
 }
+#gesture-btn:hover{background:rgba(0,255,136,.2);box-shadow:0 0 18px rgba(0,255,136,.3)}
+#gesture-btn.active{background:rgba(0,255,136,.22);border-color:#00ff88;
+  box-shadow:0 0 18px rgba(0,255,136,.5);animation:gesturePulse 1.8s ease-in-out infinite}
+@keyframes gesturePulse{0%,100%{box-shadow:0 0 10px rgba(0,255,136,.3)}50%{box-shadow:0 0 28px rgba(0,255,136,.7)}}
 
-#scene::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border: 3px solid #3fa7ff;
-  pointer-events: none;
-  z-index: 5;
-  box-shadow: inset 0 0 30px rgba(63, 167, 255, 0.2);
+/* Gesture overlay HUD */
+#gesture-hud{
+  display:none;position:fixed;top:52px;right:14px;z-index:310;
+  background:rgba(10,14,20,.93);border:1px solid var(--green);border-radius:6px;
+  padding:12px 16px;min-width:200px;backdrop-filter:blur(8px);
+  box-shadow:0 0 24px rgba(0,255,136,.2);
+  font-family:'Share Tech Mono',monospace;font-size:.72rem;
 }
+#gesture-hud.active{display:block}
+#gesture-hud .gh-title{color:var(--green);font-size:.78rem;font-weight:700;letter-spacing:2px;margin-bottom:8px}
+#gesture-hud .gh-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;color:var(--dim)}
+#gesture-hud .gh-row span{color:var(--text)}
+#gesture-hud .gh-status{margin-top:8px;padding:5px 8px;border-radius:3px;
+  background:rgba(0,0,0,.3);border:1px solid var(--border);
+  display:flex;justify-content:space-between;}
+#gesture-hud .gh-status .label{color:var(--dim)}
+#gesture-hud .gh-status .val{color:var(--green)}
+#gesture-hud .gh-hands{color:var(--accent)}
 
-#arStatus {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: rgba(0, 0, 0, 0.8);
-  padding: 10px 15px;
-  border-radius: 4px;
-  font-size: 12px;
-  z-index: 100;
-  color: #3fa7ff;
+/* Spacebar exit hint */
+#gesture-exit-hint{
+  display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:310;
+  font-family:'Share Tech Mono',monospace;font-size:.72rem;
+  color:#ffcc00;background:rgba(10,14,20,.9);
+  border:1px solid #ffcc00;border-radius:3px;padding:5px 14px;
+  pointer-events:none;letter-spacing:1px;
+  animation:hintBlink 2s ease-in-out infinite;
 }
+#gesture-exit-hint.active{display:block}
+@keyframes hintBlink{0%,100%{opacity:.7}50%{opacity:1}}
 
-#controls {
-  flex: 1;
-  padding: 20px;
-  background: #1e293b;
-  overflow-y: auto;
-  overflow-x: hidden;
-  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.4);
-  z-index: 50;
-  max-height: 100vh;
+/* Gesture action flash */
+#gesture-action{
+  display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Share Tech Mono',monospace;font-size:1.1rem;
+  color:var(--green);background:rgba(10,14,20,.85);
+  border:1px solid var(--green);border-radius:4px;padding:10px 22px;
+  pointer-events:none;z-index:312;letter-spacing:2px;
+  transition:opacity .3s;
 }
-
-h2, h3 {
-  margin-top: 18px;
-  color: #3fa7ff;
-}
-
-input[type="range"] {
-  width: 100%;
-  margin-top: 5px;
-  margin-bottom: 15px;
-}
-
-label {
-  font-size: 14px;
-}
-
-button {
-  padding: 10px 14px;
-  background: linear-gradient(135deg, #3fa7ff 0%, #2b8ce6 100%);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-top: 10px;
-  width: 100%;
-  font-size: 13px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(63, 167, 255, 0.3);
-}
-
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(63, 167, 255, 0.5);
-}
-
-button:active {
-  transform: translateY(0);
-}
-
-pre, #history {
-  background: #0f172a;
-  padding: 10px;
-  font-size: 11px;
-  border-radius: 4px;
-  margin-top: 10px;
-  font-family: 'Courier New', monospace;
-}
-
-#history {
-  max-height: 120px;
-  overflow: auto;
-}
-
-.section-group {
-  margin-bottom: 20px;
-}
-
-#modeToggle {
-  background: #10b981;
-  width: 100%;
-  margin-bottom: 15px;
-}
-
-#modeToggle:hover {
-  background: #059669;
-}
-
-@media (max-width: 1024px) {
-  button {
-    padding: 6px 8px;
-    font-size: 12px;
-    margin-top: 6px;
-  }
-}
-
 </style>
 </head>
-
 <body>
 
-<div id="container">
-  <div id="scene">
-    <div id="arStatus">🔴 Camera initializing...</div>
+<!-- ── HEADER ── -->
+<header>
+  <h1>🔒 SECURITY PLANNER</h1>
+  <div class="badge">2D</div>
+  <div class="badge badge-3d" id="badge-glb">GLB LAYOUT</div>
+  <button class="goto-btn" id="goto3d-btn" onclick="open3D()" style="display:none">
+    <span class="icon">🏠</span> Continue to 3D
+  </button>
+</header>
+
+<!-- ── 2D VIEW ── -->
+<div class="main">
+  <div class="sidebar" id="sidebar2d">
+    <div>
+      <h2 style="margin-bottom:8px">Mode</h2>
+      <button id="place-cam-btn" onclick="enterPlaceMode()" style="width:100%;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:4px;border:1px solid var(--accent);background:rgba(0,229,255,.1);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:.78rem;cursor:pointer;letter-spacing:1px;transition:all .2s;font-weight:600">
+        <span>📷</span> Place Camera
+      </button>
+      <div id="mode-indicator" style="font-family:'Share Tech Mono',monospace;font-size:.72rem;padding:5px 9px;border-radius:3px;border:1px solid var(--border);color:var(--dim);background:transparent;margin-top:6px;display:none"></div>
+    </div>
+    <hr class="divider">
+
+    <div id="default-settings-panel">
+      <h2 style="margin-bottom:8px">New Camera Defaults</h2>
+      <div class="slider-group">
+        <label>FOV Angle <span id="fov-val">60°</span></label>
+        <input type="range" id="fov-range" min="20" max="90" value="60" oninput="updateFOV(this.value)">
+      </div>
+      <div class="slider-group" style="margin-top:8px">
+        <label>Range <span id="range-val">100px</span></label>
+        <input type="range" id="range-range" min="20" max="150" value="80" oninput="updateRange(this.value)">
+      </div>
+    </div>
+
+    <div id="selected-cam-panel" style="display:none">
+      <h2 style="margin-bottom:5px;color:var(--accent)">Selected Camera</h2>
+      <div id="selected-cam-name" style="font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--dim);margin-bottom:8px"></div>
+      <div class="slider-group">
+        <label>FOV <span id="sel-fov-val">60°</span></label>
+        <input type="range" id="sel-fov-range" min="20" max="90" value="60" oninput="updateSelectedFOV(this.value)">
+      </div>
+      <div class="slider-group" style="margin-top:8px">
+        <label>Range <span id="sel-range-val">100px</span></label>
+        <input type="range" id="sel-range-range" min="20" max="150" value="80" oninput="updateSelectedRange(this.value)">
+      </div>
+      <button onclick="deleteCamera(selectedCam&&selectedCam.id)" style="margin-top:10px;width:100%;padding:6px;border-radius:4px;border:1px solid var(--red);background:rgba(255,59,59,.08);color:var(--red);font-family:'Rajdhani',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer">✕ Remove</button>
+    </div>
+
+    <hr class="divider">
+    <div>
+      <h2 style="margin-bottom:7px">Cameras <span style="color:var(--accent)" id="cam-count">0</span></h2>
+      <div class="camera-list" id="camera-list"></div>
+    </div>
+    <hr class="divider">
+    <div class="stats">
+      <div class="stat-row"><span class="label">Total area</span><span class="val" id="s-total">—</span></div>
+      <div class="stat-row"><span class="label">Covered</span><span class="val green" id="s-covered">—</span></div>
+      <div class="stat-row"><span class="label">Blind spots</span><span class="val red" id="s-blind">—</span></div>
+    </div>
+    <button class="clear-btn" onclick="clearAll()">⚠ Clear All</button>
   </div>
 
-  <div id="controls">
-    <div style="background: linear-gradient(135deg, #3fa7ff 0%, #2b8ce6 100%); padding: 12px; border-radius: 6px; margin-bottom: 15px; text-align: center; font-weight: 600;">📊 DESKTOP MODE</div>
-    <button id="modeToggle" onclick="window.location.href='ar-mode.html'">📷 START AR MODE</button>
-
-    <div class="section-group" style="display:none;">
-      <div style="background: rgba(63, 167, 255, 0.1); padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 12px; border-left: 3px solid #3fa7ff;">
-      <strong>💡 Tip:</strong> Drag cube left-click, scroll to move forward/back, or go to AR mode for hand tracking!
-    </div>
-      <h2>Translation</h2>
-      <label>X</label>
-      <input type="range" id="tx" min="-5" max="5" step="0.1" value="0">
-      <label>Y</label>
-      <input type="range" id="ty" min="-5" max="5" step="0.1" value="0">
-      <label>Z</label>
-      <input type="range" id="tz" min="-5" max="5" step="0.1" value="0">
-    </div>
-
-    <div class="section-group">
-      <h2>Rotation</h2>
-      <label>X</label>
-      <input type="range" id="rx" min="0" max="360" value="0">
-      <label>Y</label>
-      <input type="range" id="ry" min="0" max="360" value="0">
-      <label>Z</label>
-      <input type="range" id="rz" min="0" max="360" value="0">
-    </div>
-
-    <div class="section-group">
-      <h2>Scale (Data Dimensions)</h2>
-      <label>X</label>
-      <input type="range" id="sx" min="0.5" max="3" step="0.1" value="1">
-      <label>Y</label>
-      <input type="range" id="sy" min="0.5" max="3" step="0.1" value="1">
-      <label>Z</label>
-      <input type="range" id="sz" min="0.5" max="3" step="0.1" value="1">
-    </div>
-
-    <div class="section-group">
-      <h2>Shape Selection</h2>
-      <button onclick="changeShape('box')">📦 Cube</button>
-      <button onclick="changeShape('tetrahedron')">🔺 Tetra</button>
-      <button onclick="changeShape('octahedron')">⬥ Octa</button>
-      <button onclick="changeShape('dodecahedron')">⬡ Dodeca</button>
-      <button onclick="changeShape('icosahedron')">⬢ Icosa</button>
-    </div>
-
-    <div class="section-group">
-  <h2>Camera Controls</h2>
-  <label>Cam X</label>
-  <input type="range" id="camX" min="-10" max="10" step="0.5" value="0">
-  <label>Cam Y</label>
-  <input type="range" id="camY" min="-10" max="10" step="0.5" value="0">
-  <label>Cam Z</label>
-  <input type="range" id="camZ" min="-10" max="20" step="0.5" value="8">
-    </div>
-
-
-    <!-- <div class="section-group">
-      <h2>Dataset Mapping</h2>
-      <label for="datasetSelect">Select Dataset:</label>
-      <select id="datasetSelect" style="width: 100%; padding: 8px; margin-top: 8px;">
-        <option value="">-- None --</option>
-        <option value="A">Company A</option>
-        <option value="B">Company B</option>
-        <option value="C">Company C</option>
-      </select>
-      <div id="dataInfo" style="margin-top: 10px; font-size: 13px;">
-        Feature A: -<br>
-        Feature B: -<br>
-        Feature C: -
-      </div>
-    </div> -->
-
-    <div class="section-group">
-      <label><input type="checkbox" id="axesToggle" checked> Show Axes</label><br>
-      <label><input type="checkbox" id="breakdownToggle" checked> Show Matrix Breakdown</label>
-    </div>
-
-    <button onclick="resetObject()">🔄 Reset</button>
-
-    <h3>Transformation Matrix</h3>
-    <pre id="matrixDisplay"></pre>
-
-    <h3>Decomposed Matrices</h3>
-    <pre id="decomposedMatrices"></pre>
-
-    <h3>History</h3>
-    <div id="history"></div>
-
-    <div class="section-group">
-    <h2>Guided Scenarios</h2>
-    <button onclick="preset('rotate')">Rotate in View</button>
-    <button onclick="preset('camera')">Move Camera</button>
-    <button onclick="preset('scale')">Scale in View</button>
-    <button onclick="preset('behind')">Behind Camera</button>
-    </div>
+  <div id="canvas-wrap">
+    <canvas id="main-canvas"></canvas>
+    <div class="hint" id="hint">Click inside fence to place a camera · Double-click camera to rotate</div>
   </div>
 </div>
 
+<!-- ── 3D VIEW OVERLAY ── -->
+<div id="view3d">
+  <!-- Loading -->
+  <div id="loading3d">
+    <div class="load-text">LOADING 3D MODEL</div>
+    <div class="load-bar"><div class="load-fill"></div></div>
+    <div class="load-text" id="load-status">Initialising renderer...</div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud3d">
+    <h1>🏠 3D VIEW — HOUSE MODEL</h1>
+    <span id="cam-count-3d">Cameras: <span id="count3">0</span></span>
+    <button id="gesture-btn" onclick="toggleGestureMode()" title="Activate hand gesture control (webcam required)">🖐️ Gesture Mode</button>
+    <button class="back-btn" onclick="close3D()">← Back to 2D</button>
+  </div>
+
+  <div id="three-wrap" style="flex:1;position:relative;overflow:hidden;">
+    <canvas id="three-canvas" style="display:block;width:100%;height:100%;"></canvas>
+    <!-- Viewport dividers -->
+    <div id="vp-hdivider" style="position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(0,229,255,0.35);pointer-events:none;z-index:5;"></div>
+    <div id="vp-vdivider" style="position:absolute;top:0;bottom:0;left:50%;width:1px;background:rgba(0,229,255,0.35);pointer-events:none;z-index:5;"></div>
+    <!-- Viewport labels -->
+    <div id="vp-label-tl" style="position:absolute;top:8px;left:10px;font-family:'Share Tech Mono',monospace;font-size:.65rem;color:#00e5ff;letter-spacing:2px;pointer-events:none;z-index:6;opacity:.85;">PERSPECTIVE</div>
+    <div id="vp-label-tr" style="position:absolute;top:8px;left:calc(50% + 10px);font-family:'Share Tech Mono',monospace;font-size:.65rem;color:#00ff88;letter-spacing:2px;pointer-events:none;z-index:6;opacity:.85;">TOP</div>
+    <div id="vp-label-bl" style="position:absolute;top:calc(50% + 8px);left:10px;font-family:'Share Tech Mono',monospace;font-size:.65rem;color:#ffc107;letter-spacing:2px;pointer-events:none;z-index:6;opacity:.85;">FRONT</div>
+    <div id="vp-label-br" style="position:absolute;top:calc(50% + 8px);left:calc(50% + 10px);font-family:'Share Tech Mono',monospace;font-size:.65rem;color:#ff3b3b;letter-spacing:2px;pointer-events:none;z-index:6;opacity:.85;">SIDE</div>
+  </div>
+
+  <!-- Gesture Mode HUD (shown when active) -->
+  <div id="gesture-hud">
+    <div class="gh-title">🖐️ GESTURE CONTROL</div>
+    <div class="gh-row">✋ <span>Open hand</span> → Orbit scene</div>
+    <div class="gh-row">🤏 <span>Pinch</span> → Zoom in/out</div>
+    <div class="gh-row">👋 <span>Swipe</span> → Rotate view</div>
+    <div class="gh-row">⌨️ <span>Spacebar</span> → Exit gesture</div>
+    <div class="gh-status">
+      <span class="label">Hands:</span>
+      <span class="val gh-hands" id="g-hand-count">0</span>
+    </div>
+    <div class="gh-status">
+      <span class="label">Status:</span>
+      <span class="val" id="g-status">Initialising...</span>
+    </div>
+  </div>
+
+  <!-- Spacebar exit hint -->
+  <div id="gesture-exit-hint">⌨ SPACEBAR to exit gesture mode</div>
+
+  <!-- Gesture action label -->
+  <div id="gesture-action"></div>
+
+  <!-- Mini-map -->
+  <div id="minimap" title="Click to return to 2D planner">
+    <canvas id="mini-canvas"></canvas>
+    <div id="minimap-label">2D MAP</div>
+    <div id="minimap-hint">click to return</div>
+  </div>
+
+  <!-- Selected camera panel -->
+  <div id="sel-panel">
+    <h3 id="sel-title">CAM-01</h3>
+    <div class="sel-row">
+      <label>FOV</label>
+      <input type="range" id="sp-fov" min="20" max="90" value="60" oninput="sp_fov(this.value)">
+      <span id="sp-fov-val">90°</span>
+    </div>
+    <div class="sel-row">
+      <label>Range</label>
+      <input type="range" id="sp-range" min="0.5" max="2.5" step="0.1" value="2" oninput="sp_range(this.value)">
+      <span id="sp-range-val">3.0</span>
+    </div>
+    <div class="sel-row">
+      <label>Height</label>
+      <input type="range" id="sp-height" min="-3" max="5" step="0.1" value="0" oninput="sp_height(this.value)">
+      <span id="sp-height-val">0.0m</span>
+    </div>
+    <div class="sel-row">
+      <label>Tilt</label>
+      <input type="range" id="sp-tilt" min="-90" max="15" step="1" value="-45" oninput="sp_tilt(this.value)">
+      <span id="sp-tilt-val">-45°</span>
+    </div>
+    <button class="del-cam-btn" onclick="delete3DCam()">✕ Remove Camera</button>
+    <button class="add-cam-3d-btn" onclick="add3DCamera()">＋ Add Camera</button>
+  </div>
+
+  <div class="drag-hint" id="drag-hint">🖱 Drag to orbit · Scroll to zoom · Right-drag to pan · Double-click empty = place · Double-click camera = rotate</div>
+  <div id="rotate3d-hint" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Share Tech Mono',monospace;font-size:.9rem;color:#ffcc00;background:rgba(10,14,20,.88);border:1px solid #ffcc00;border-radius:4px;padding:8px 18px;pointer-events:none;z-index:350;opacity:0;transition:opacity .4s;white-space:nowrap">🔄 Drag left/right to rotate camera</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script>
+// ════════════════════════════════════════════════
+//  EMBEDDED GLB (base64)
+// ════════════════════════════════════════════════
+// House GLB loaded from file (see loadHouseGLB below)
+
+// Camera GLB loaded from file (see loadCameraTemplate)
+
+// Camera mesh template (loaded once, cloned per camera)
+let _camMeshTemplate = null;
+let _camMeshLoading = false;
+let _camMeshCallbacks = [];
+
+function loadCameraTemplate(){
+  return new Promise(resolve=>{
+    if(_camMeshTemplate){ resolve(_camMeshTemplate); return; }
+    _camMeshCallbacks.push(resolve);
+    if(_camMeshLoading) return;
+    _camMeshLoading = true;
+
+    // Single async flow — ab stays in scope throughout
+    (async ()=>{
+      let ab;
+      try {
+        const res = await fetch('camera.glb');
+        if(!res.ok) throw new Error('camera.glb fetch failed: '+res.status);
+        ab = await res.arrayBuffer();
+      } catch(fetchErr){
+        console.warn('camera.glb not found, using fallback sphere:', fetchErr.message);
+        _camMeshCallbacks.forEach(cb=>cb(null));
+        _camMeshCallbacks=[];
+        _camMeshLoading=false;
+        return;
+      }
+
+      try {
+        const dv = new DataView(ab);
+        const jsonChunkLen = dv.getUint32(12, true);
+        const jsonBytes    = new Uint8Array(ab, 20, jsonChunkLen);
+        const json         = JSON.parse(new TextDecoder().decode(jsonBytes));
+        const binOffset    = 20 + jsonChunkLen;
+        const binChunkLen  = dv.getUint32(binOffset, true);
+        const binData      = new Uint8Array(ab, binOffset+8, binChunkLen);
+
+        const group = new THREE.Group();
+
+        json.meshes.forEach((mesh, meshIdx)=>{
+          mesh.primitives.forEach(prim=>{
+            const posAcc = json.accessors[prim.attributes['POSITION']];
+            const posBV  = json.bufferViews[posAcc.bufferView];
+            const posArr = new Float32Array(binData.buffer, binData.byteOffset+(posBV.byteOffset||0), posBV.byteLength/4);
+
+            let idxArr = null;
+            if(prim.indices !== undefined){
+              const idxAcc = json.accessors[prim.indices];
+              const idxBV  = json.bufferViews[idxAcc.bufferView];
+              const byteOff= binData.byteOffset+(idxBV.byteOffset||0);
+              idxArr = idxAcc.componentType===5123
+                ? new Uint16Array(binData.buffer, byteOff, idxBV.byteLength/2)
+                : new Uint32Array(binData.buffer, byteOff, idxBV.byteLength/4);
+            }
+
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(posArr), 3));
+            if(idxArr) geo.setIndex(new THREE.BufferAttribute(new Uint16Array(idxArr), 1));
+            geo.computeVertexNormals();
+
+            // Dark metal body — colour will be overridden per instance
+            const mat = new THREE.MeshPhongMaterial({
+              color:0x2a2a35, shininess:90, specular:0x555577
+            });
+            group.add(new THREE.Mesh(geo, mat));
+          });
+        });
+
+        // Centre geometry at origin and scale to 0.38 world units (camera body size)
+        const bbox   = new THREE.Box3().setFromObject(group);
+        const centre = bbox.getCenter(new THREE.Vector3());
+        const size   = bbox.getSize(new THREE.Vector3());
+        const s      = 0.38 / Math.max(size.x, size.y, size.z);
+        group.children.forEach(child=>{
+          if(child.isObject3D && child.geometry)
+            child.geometry.translate(-centre.x, -centre.y, -centre.z);
+        });
+        group.scale.setScalar(s);
+
+        _camMeshTemplate = group;
+        _camMeshCallbacks.forEach(cb=>cb(group));
+        _camMeshCallbacks=[];
+      } catch(parseErr){
+        console.error('Camera GLB parse error:', parseErr);
+        _camMeshCallbacks.forEach(cb=>cb(null));
+        _camMeshCallbacks=[];
+      }
+    })();
+  });
+}
+
+// Kick off loading immediately so it's ready when cameras are placed
+// (called after THREE is available, inside initThree)
+
+let cameras = [];
+let selectedCam = null;
+let interactionMode = 'place';
+let defaultFOV = 60, defaultRange = 100;
+let isDraggingAngle = false;
+
+// ════════════════════════════════════════════════
+//  GLB MODEL BOUNDS (extracted from GLB JSON)
+//  acc[0]  = "Cube" (outer fence/yard mesh)
+//  acc[4]  = "windows" mesh
+//  acc[8]  = "house" mesh
+// ════════════════════════════════════════════════
+const MODEL = {
+  // The "Cube" (fence enclosure) — used for fence world bounds
+  fence: { xMin:-3.887, xMax:3.884, yMin:-1.431, yMax:0.062, zMin:-4.122, zMax:3.589 },
+  // The "house" mesh bounds
+  house: { xMin:-1.795, xMax:2.499, yMin:-1.028, yMax:1.088, zMin:-1.665, zMax:1.688 },
+  // The "windows" mesh bounds
+  windows: { xMin:-1.256, xMax:0.448, yMin:-0.894, yMax:0.944, zMin:-0.907, zMax:1.245 }
+};
+
+// ════════════════════════════════════════════════
+//  2D CANVAS SETUP
+// ════════════════════════════════════════════════
+const canvas2d = document.getElementById('main-canvas');
+const ctx = canvas2d.getContext('2d');
+const wrap = document.getElementById('canvas-wrap');
+let W, H, house, fence, windows2d, housePoly, houseWalls;
+
+const FENCE_MARGIN = 0.06;
+const FENCE_REL = { x:FENCE_MARGIN, y:FENCE_MARGIN, w:1-FENCE_MARGIN*2, h:1-FENCE_MARGIN*2 };
+const HOUSE_IN_FENCE = { x:0.269, y:0.247, w:0.553, h:0.435 };
+const WIN_IN_FENCE   = { x:0.339, y:0.304, w:0.219, h:0.279 };
+
+const HOUSE_POLY_REL = [
+  [0.269, 0.247],[0.822, 0.247],[0.822, 0.681],[0.570, 0.681],
+  [0.570, 0.613],[0.444, 0.613],[0.444, 0.681],[0.269, 0.681],
+];
+const HOUSE_WALLS_REL = [
+  [0.444, 0.247, 0.444, 0.613],[0.570, 0.247, 0.570, 0.681],
+  [0.269, 0.368, 0.822, 0.368],[0.269, 0.494, 0.822, 0.494],
+];
+
+function resize2d() {
+  W = wrap.clientWidth; H = wrap.clientHeight;
+  canvas2d.width = W; canvas2d.height = H;
+  fence     = { x:FENCE_REL.x*W, y:FENCE_REL.y*H, w:FENCE_REL.w*W, h:FENCE_REL.h*H };
+  house     = { x:fence.x+HOUSE_IN_FENCE.x*fence.w, y:fence.y+HOUSE_IN_FENCE.y*fence.h, w:HOUSE_IN_FENCE.w*fence.w, h:HOUSE_IN_FENCE.h*fence.h };
+  windows2d = { x:fence.x+WIN_IN_FENCE.x*fence.w, y:fence.y+WIN_IN_FENCE.y*fence.h, w:WIN_IN_FENCE.w*fence.w, h:WIN_IN_FENCE.h*fence.h };
+  housePoly  = HOUSE_POLY_REL.map(([rx,ry]) => [fence.x+rx*fence.w, fence.y+ry*fence.h]);
+  houseWalls = HOUSE_WALLS_REL.map(([x0,y0,x1,y1]) => [fence.x+x0*fence.w, fence.y+y0*fence.h, fence.x+x1*fence.w, fence.y+y1*fence.h]);
+  render2d();
+}
+
+function inFence(x,y){ return x>=fence.x&&x<=fence.x+fence.w&&y>=fence.y&&y<=fence.y+fence.h }
+function inHouse(x,y){
+  if(!housePoly) return false;
+  let inside=false;
+  for(let i=0,j=housePoly.length-1;i<housePoly.length;j=i++){
+    const [xi,yi]=housePoly[i],[xj,yj]=housePoly[j];
+    if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)) inside=!inside;
+  }
+  return inside;
+}
+function getCameraAt(mx,my,r=18){
+  let best=null,bestD=r;
+  for(const c of cameras){ const d=Math.hypot(c.x-mx,c.y-my); if(d<bestD){bestD=d;best=c} }
+  return best;
+}
+
+// ── Mode management ──
+function enterPlaceMode(){
+  interactionMode='place'; selectedCam=null; isDraggingAngle=false;
+  canvas2d.style.cursor='crosshair';
+  updateModeIndicator(); updateSelectedPanel(); render2d();
+}
+function enterSelectedMode(cam){
+  interactionMode='selected'; selectedCam=cam; isDraggingAngle=false;
+  canvas2d.style.cursor='pointer';
+  updateModeIndicator(); updateSelectedPanel();
+  document.getElementById('sel-fov-range').value=cam.fov;
+  document.getElementById('sel-fov-val').textContent=cam.fov+'°';
+  document.getElementById('sel-range-range').value=cam.range;
+  document.getElementById('sel-range-val').textContent=Math.round(cam.range)+'px';
+  render2d();
+}
+function enterRotateMode(cam){
+  interactionMode='rotate'; selectedCam=cam; isDraggingAngle=true;
+  canvas2d.style.cursor='crosshair';
+  updateModeIndicator(); render2d();
+}
+function updateModeIndicator(){
+  const btn = document.getElementById('place-cam-btn');
+  const el  = document.getElementById('mode-indicator');
+  if(interactionMode==='place'){
+    btn.style.borderColor='var(--accent)';btn.style.background='rgba(0,229,255,.1)';
+    btn.style.color='var(--accent)';btn.style.boxShadow='0 0 12px rgba(0,229,255,.2)';
+    el.style.display='none';
+  } else if(interactionMode==='selected'){
+    btn.style.borderColor='var(--border)';btn.style.background='transparent';
+    btn.style.color='var(--dim)';btn.style.boxShadow='none';
+    const i=cameras.indexOf(selectedCam);
+    el.textContent=`⚙ CAM-${String(i+1).padStart(2,'0')} selected`;
+    el.style.color=selectedCam.onHouse?'#ffa040':'var(--accent)';
+    el.style.display='block';
+  } else {
+    btn.style.borderColor='var(--border)';btn.style.background='transparent';
+    btn.style.color='var(--dim)';btn.style.boxShadow='none';
+    const i=cameras.indexOf(selectedCam);
+    el.textContent=`🔄 Rotating CAM-${String(i+1).padStart(2,'0')}`;
+    el.style.color='#ffcc00';el.style.display='block';
+  }
+}
+function updateSelectedPanel(){
+  const defP=document.getElementById('default-settings-panel');
+  const selP=document.getElementById('selected-cam-panel');
+  if(selectedCam){
+    defP.style.display='none'; selP.style.display='block';
+    const i=cameras.indexOf(selectedCam);
+    document.getElementById('selected-cam-name').textContent=`CAM-${String(i+1).padStart(2,'0')} · ${selectedCam.onHouse?'🏠 HOUSE':'🌿 YARD'}`;
+  } else { defP.style.display='block'; selP.style.display='none' }
+}
+function updateFOV(v){ document.getElementById('fov-val').textContent=v+'°'; defaultFOV=+v }
+function updateRange(v){ document.getElementById('range-val').textContent=v+'px'; defaultRange=+v }
+
+let _3dRebuildTimer=null;
+function scheduleRebuild3d(){ if(!scene3d) return; clearTimeout(_3dRebuildTimer); _3dRebuildTimer=setTimeout(update3DCameras,80); }
+let _fullSyncTimer=null;
+function scheduleFullSync(){ clearTimeout(_fullSyncTimer); _fullSyncTimer=setTimeout(()=>{ updateStats(); drawMinimap(); },120); }
+
+function updateSelectedFOV(v){
+  document.getElementById('sel-fov-val').textContent=v+'°';
+  if(selectedCam){ selectedCam.fov=+v; render2d_fast(); scheduleRebuild3d(); scheduleFullSync(); }
+}
+function updateSelectedRange(v){
+  document.getElementById('sel-range-val').textContent=v+'px';
+  if(selectedCam){ selectedCam.range=+v; render2d_fast(); scheduleRebuild3d(); scheduleFullSync(); }
+}
+
+function render2d_fast(){
+  const c=ctx;
+  c.clearRect(0,0,W,H);
+  const fe=fence, ho=house, wi=windows2d;
+  const poly=housePoly, walls=houseWalls;
+  function hp(p){ c.moveTo(p[0][0],p[0][1]); for(let i=1;i<p.length;i++) c.lineTo(p[i][0],p[i][1]); c.closePath(); }
+  c.save();c.beginPath();c.moveTo(fe.x,fe.y);c.lineTo(fe.x+fe.w,fe.y);c.lineTo(fe.x+fe.w,fe.y+fe.h);c.lineTo(fe.x,fe.y+fe.h);c.closePath();hp(poly);c.clip('evenodd');
+  c.fillStyle='rgba(255,59,59,0.28)';c.fillRect(fe.x,fe.y,fe.w,fe.h);c.restore();
+  c.save();c.beginPath();hp(poly);c.clip();c.fillStyle='#141e2e';c.fillRect(fe.x,fe.y,fe.w,fe.h);c.restore();
+  for(const cam of cameras) drawCoverage2d(c,cam,fe,poly);
+  c.save();c.beginPath();hp(poly);c.clip();c.fillStyle='#141e2e';c.fillRect(fe.x,fe.y,fe.w,fe.h);c.restore();
+  c.save();c.beginPath();hp(poly);c.strokeStyle='#ff4444';c.lineWidth=2.5;c.stroke();c.restore();
+  if(walls){c.save();c.beginPath();hp(poly);c.clip();c.strokeStyle='rgba(255,80,80,0.45)';c.lineWidth=1.2;walls.forEach(([x0,y0,x1,y1])=>{c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y1);c.stroke();});c.restore();}
+  drawWindows2d(c,wi,ho);
+  const lx=(poly[1][0]+poly[2][0])/2*0.5+(poly[0][0]+poly[3][0])/2*0.5;
+  const ly=(poly[0][1]+poly[2][1])/2;
+  c.fillStyle='rgba(255,100,100,.5)';c.font=`bold ${Math.round(ho.h*.08)}px Rajdhani,sans-serif`;c.textAlign='center';c.textBaseline='middle';c.fillText('HOUSE',lx,ly);
+  c.strokeStyle='#5599ff';c.lineWidth=2.5;c.strokeRect(fe.x,fe.y,fe.w,fe.h);
+  for(const cam of cameras) drawCamera2d(c,cam,cam===selectedCam);
+  updateHint();
+}
+
+// ── Click handling ──
+let clickTimer=null;
+const DBL_MS=260;
+canvas2d.addEventListener('click',e=>{
+  const mx=e.offsetX,my=e.offsetY;
+  if(clickTimer){clearTimeout(clickTimer);clickTimer=null;return}
+  clickTimer=setTimeout(()=>{clickTimer=null;handleSingleClick(mx,my)},DBL_MS);
+});
+canvas2d.addEventListener('dblclick',e=>{
+  if(clickTimer){clearTimeout(clickTimer);clickTimer=null}
+  handleDoubleClick(e.offsetX,e.offsetY);
+});
+function handleSingleClick(mx,my){
+  const hit=getCameraAt(mx,my);
+  if(hit){enterSelectedMode(hit)}
+  else if(inFence(mx,my)){
+    if(interactionMode!=='place'){enterPlaceMode();return}
+    const cam={x:mx,y:my,angle:-Math.PI/2,fov:defaultFOV,range:defaultRange,onHouse:inHouse(mx,my),id:Date.now()};
+    cameras.push(cam);
+    updateSidebar(); update3DCameras(); render2d();
+    enterSelectedMode(cam);
+    document.getElementById('goto3d-btn').style.display='flex';
+  } else { enterPlaceMode() }
+}
+function handleDoubleClick(mx,my){
+  const hit=getCameraAt(mx,my); if(hit) enterRotateMode(hit);
+}
+canvas2d.addEventListener('mousemove',e=>{
+  if(isDraggingAngle&&selectedCam&&interactionMode==='rotate'){
+    selectedCam.angle=Math.atan2(e.offsetY-selectedCam.y,e.offsetX-selectedCam.x);
+    update3DCameras(); render2d();
+  }
+});
+canvas2d.addEventListener('mouseup',()=>{
+  if(interactionMode==='rotate'&&isDraggingAngle){isDraggingAngle=false;enterSelectedMode(selectedCam)}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')enterPlaceMode()});
+
+// ── Full render ──
+function render2d(targetCtx, targetW, targetH, targetFence, targetHouse, targetWindows){
+  const c=targetCtx||ctx;
+  const w=targetW||W, h=targetH||H;
+  const fe=targetFence||fence, ho=targetHouse||house, wi=targetWindows||windows2d;
+  c.clearRect(0,0,w,h);
+
+  function housePolyPath(poly){
+    c.moveTo(poly[0][0],poly[0][1]);
+    for(let i=1;i<poly.length;i++) c.lineTo(poly[i][0],poly[i][1]);
+    c.closePath();
+  }
+  const poly=targetFence?HOUSE_POLY_REL.map(([rx,ry])=>[targetFence.x+rx*targetFence.w,targetFence.y+ry*targetFence.h]):housePoly;
+  const walls=targetFence?HOUSE_WALLS_REL.map(([x0,y0,x1,y1])=>[targetFence.x+x0*targetFence.w,targetFence.y+y0*targetFence.h,targetFence.x+x1*targetFence.w,targetFence.y+y1*targetFence.h]):houseWalls;
+
+  c.save();c.beginPath();c.moveTo(fe.x,fe.y);c.lineTo(fe.x+fe.w,fe.y);c.lineTo(fe.x+fe.w,fe.y+fe.h);c.lineTo(fe.x,fe.y+fe.h);c.closePath();housePolyPath(poly);c.clip('evenodd');
+  c.fillStyle='rgba(255,59,59,0.28)';c.fillRect(fe.x,fe.y,fe.w,fe.h);c.restore();
+
+  c.save();c.beginPath();housePolyPath(poly);c.clip();c.fillStyle='#141e2e';c.fillRect(fe.x,fe.y,fe.w,fe.h);c.restore();
+
+  for(const cam of cameras) drawCoverage2d(c,cam,fe,poly);
+
+  c.save();c.beginPath();housePolyPath(poly);c.clip();c.fillStyle='#141e2e';c.fillRect(fe.x,fe.y,fe.w,fe.h);c.restore();
+  c.save();c.beginPath();housePolyPath(poly);c.strokeStyle='#ff4444';c.lineWidth=2.5;c.stroke();c.restore();
+
+  if(walls){
+    c.save();c.beginPath();housePolyPath(poly);c.clip();
+    c.strokeStyle='rgba(255,80,80,0.45)';c.lineWidth=1.2;
+    walls.forEach(([x0,y0,x1,y1])=>{c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y1);c.stroke();});
+    c.restore();
+  }
+  drawWindows2d(c,wi,ho);
+
+  const labelX=poly?(poly[1][0]+poly[2][0])/2*0.5+(poly[0][0]+poly[3][0])/2*0.5:ho.x+ho.w/2;
+  const labelY=poly?(poly[0][1]+poly[2][1])/2:ho.y+ho.h/2;
+  c.fillStyle='rgba(255,100,100,.5)';c.font=`bold ${Math.round(ho.h*.08)}px Rajdhani,sans-serif`;
+  c.textAlign='center';c.textBaseline='middle';c.fillText('HOUSE',labelX,labelY);
+
+  c.strokeStyle='#5599ff';c.lineWidth=2.5;c.strokeRect(fe.x,fe.y,fe.w,fe.h);
+
+  if(!targetCtx){
+    for(const cam of cameras) drawCamera2d(c,cam,cam===selectedCam);
+    updateStats(); updateHint(); drawMinimap();
+  } else {
+    for(const cam of cameras) drawCamera2d(c,cam,false);
+  }
+}
+
+function drawCoverage2d(c,cam,fe,poly){
+  const halfFov=(cam.fov*Math.PI/180)/2, steps=60;
+  c.save();
+  c.beginPath();
+  c.moveTo(fe.x,fe.y);c.lineTo(fe.x+fe.w,fe.y);c.lineTo(fe.x+fe.w,fe.y+fe.h);c.lineTo(fe.x,fe.y+fe.h);c.closePath();
+  if(!cam.onHouse){
+    const p=Array.isArray(poly)?poly:housePoly;
+    c.moveTo(p[0][0],p[0][1]);for(let i=1;i<p.length;i++) c.lineTo(p[i][0],p[i][1]);c.closePath();
+  }
+  c.clip(cam.onHouse?'nonzero':'evenodd');
+  c.beginPath();c.moveTo(cam.x,cam.y);
+  for(let i=0;i<=steps;i++){
+    const a=(cam.angle-halfFov)+(cam.fov*Math.PI/180)*(i/steps);
+    c.lineTo(cam.x+Math.cos(a)*cam.range,cam.y+Math.sin(a)*cam.range);
+  }
+  c.closePath();
+  const grad=c.createRadialGradient(cam.x,cam.y,0,cam.x,cam.y,cam.range);
+  if(cam.onHouse){grad.addColorStop(0,'rgba(0,255,136,0.92)');grad.addColorStop(0.5,'rgba(0,220,100,0.65)');grad.addColorStop(1,'rgba(0,180,70,0.18)');}
+  else{grad.addColorStop(0,'rgba(0,255,136,0.92)');grad.addColorStop(0.5,'rgba(0,220,100,0.65)');grad.addColorStop(1,'rgba(0,180,70,0.18)');}
+  c.fillStyle=grad;c.fill();
+  c.strokeStyle='rgba(0,255,136,0.8)';c.lineWidth=1.5;c.stroke();
+  c.restore();
+}
+
+function drawCamera2d(c,cam,sel){
+  c.save();c.translate(cam.x,cam.y);
+  const base=cam.onHouse?'#ffa040':'#7ab8ff';
+  const selC=cam.onHouse?'#ffcc00':'#00e5ff';
+  const isRot=sel&&interactionMode==='rotate';
+  const color=sel?selC:base;
+  if(sel){
+    c.shadowColor=color;c.shadowBlur=20;
+    c.strokeStyle=isRot?'#ffcc00':color+'88';c.lineWidth=2;
+    if(isRot)c.setLineDash([4,4]);
+    c.beginPath();c.arc(0,0,16,0,Math.PI*2);c.stroke();
+    c.setLineDash([]);c.shadowBlur=0;
+  }
+  // Rotate so camera faces its angle direction
+  c.rotate(cam.angle+Math.PI/2);
+  // ── Camera body ──
+  c.shadowColor=color;c.shadowBlur=sel?10:4;
+  // Body rectangle
+  const bw=14, bh=10;
+  c.fillStyle=color;
+  c.beginPath();
+  c.roundRect(-bw/2,-bh/2,bw,bh,2);
+  c.fill();
+  // Lens circle
+  c.fillStyle=sel?'#ffffff':'rgba(0,0,0,0.5)';
+  c.beginPath();c.arc(0,1,3.5,0,Math.PI*2);c.fill();
+  c.fillStyle=sel?'rgba(0,200,255,0.8)':'rgba(120,180,255,0.6)';
+  c.beginPath();c.arc(0,1,2,0,Math.PI*2);c.fill();
+  // Viewfinder bump (top of camera body)
+  c.fillStyle=color;
+  c.fillRect(-4,-bh/2-4,8,4);
+  // Flash / top detail
+  c.fillStyle=sel?'rgba(255,255,255,0.6)':'rgba(255,255,255,0.25)';
+  c.fillRect(3,-bh/2-3,5,3);
+  c.shadowBlur=0;c.restore();
+}
+
+function drawWindows2d(c,wi,ho){
+  if(!wi||!ho) return;
+  const gap=wi.h*.06, half=(wi.h-gap)/2;
+  [{x:wi.x,y:wi.y,w:wi.w,h:half},{x:wi.x,y:wi.y+half+gap,w:wi.w,h:half}].forEach(win=>{
+    c.fillStyle='#0d1825';c.fillRect(win.x,win.y,win.w,win.h);
+    c.strokeStyle='#3a6ea8';c.lineWidth=1.2;c.strokeRect(win.x,win.y,win.w,win.h);
+    c.strokeStyle='rgba(58,110,168,.4)';c.lineWidth=.8;
+    c.beginPath();c.moveTo(win.x+win.w/2,win.y);c.lineTo(win.x+win.w/2,win.y+win.h);
+    c.moveTo(win.x,win.y+win.h/2);c.lineTo(win.x+win.w,win.y+win.h/2);c.stroke();
+    c.fillStyle='rgba(0,180,255,.05)';c.fillRect(win.x,win.y,win.w,win.h);
+  });
+}
+
+function updateStats(){
+  const samples=1200; let covered=0,total=0;
+  for(let i=0;i<samples;i++){
+    const sx=fence.x+Math.random()*fence.w, sy=fence.y+Math.random()*fence.h;
+    if(inHouse(sx,sy))continue; total++;
+    if(isCovered(sx,sy))covered++;
+  }
+  const pct=total?Math.round(covered/total*100):0;
+  document.getElementById('s-total').textContent=Math.round((fence.w*fence.h-house.w*house.h)/100)+' u²';
+  document.getElementById('s-covered').textContent=pct+'%';
+  document.getElementById('s-blind').textContent=(100-pct)+'%';
+}
+function isCovered(px,py){
+  for(const cam of cameras){
+    const dx=px-cam.x,dy=py-cam.y;
+    if(Math.hypot(dx,dy)>cam.range)continue;
+    let diff=Math.atan2(dy,dx)-cam.angle;
+    while(diff>Math.PI)diff-=2*Math.PI; while(diff<-Math.PI)diff+=2*Math.PI;
+    if(Math.abs(diff)<=(cam.fov*Math.PI/180)/2)return true;
+  }
+  return false;
+}
+function updateSidebar(){
+  const list=document.getElementById('camera-list');
+  document.getElementById('cam-count').textContent=cameras.length;
+  list.innerHTML='';
+  cameras.forEach((cam,i)=>{
+    const el=document.createElement('div'); el.className='camera-item';
+    const tag=cam.onHouse?`<span style="font-size:.6rem;color:#ffa040;border:1px solid #ffa040;padding:1px 3px;border-radius:2px">HOUSE</span>`:`<span style="font-size:.6rem;color:#7ab8ff;border:1px solid #7ab8ff;padding:1px 3px;border-radius:2px">YARD</span>`;
+    el.innerHTML=`<span>📷 CAM-${String(i+1).padStart(2,'0')} ${tag}</span><button class="del-btn" onclick="deleteCamera(${cam.id})">✕</button>`;
+    list.appendChild(el);
+  });
+}
+function deleteCamera(id){
+  cameras=cameras.filter(c=>c.id!==id);
+  updateSidebar(); update3DCameras(); enterPlaceMode();
+  if(cameras.length===0) document.getElementById('goto3d-btn').style.display='none';
+}
+function clearAll(){ cameras=[]; updateSidebar(); update3DCameras(); enterPlaceMode(); document.getElementById('goto3d-btn').style.display='none' }
+function updateHint(){
+  const h=document.getElementById('hint');
+  if(interactionMode==='place') h.textContent='Click inside fence to place cameras · Double-click camera to rotate';
+  else if(interactionMode==='selected') h.textContent='Adjust in sidebar · Double-click to rotate · Click empty area to deselect';
+  else h.textContent='Drag to aim the camera · Release to finish';
+}
+
+// ════════════════════════════════════════════════
+//  MINIMAP
+// ════════════════════════════════════════════════
+const miniCanvas=document.getElementById('mini-canvas');
+const miniCtx=miniCanvas.getContext('2d');
+function drawMinimap(){
+  const mw=220,mh=180;
+  miniCanvas.width=mw; miniCanvas.height=mh;
+  const scaleX=mw/W, scaleY=mh/H;
+  const mFence={x:fence.x*scaleX,y:fence.y*scaleY,w:fence.w*scaleX,h:fence.h*scaleY};
+  const mPoly=housePoly?housePoly.map(([px,py])=>[px*scaleX,py*scaleY]):null;
+  const mCams=cameras.map(c=>({...c,x:c.x*scaleX,y:c.y*scaleY,range:c.range*Math.min(scaleX,scaleY)}));
+
+  miniCtx.clearRect(0,0,mw,mh);
+  miniCtx.fillStyle='#080c12'; miniCtx.fillRect(0,0,mw,mh);
+
+  function mHousePath(){
+    if(!mPoly) return;
+    miniCtx.moveTo(mPoly[0][0],mPoly[0][1]);
+    for(let i=1;i<mPoly.length;i++) miniCtx.lineTo(mPoly[i][0],mPoly[i][1]);
+    miniCtx.closePath();
+  }
+
+  miniCtx.save();miniCtx.beginPath();miniCtx.moveTo(mFence.x,mFence.y);miniCtx.lineTo(mFence.x+mFence.w,mFence.y);miniCtx.lineTo(mFence.x+mFence.w,mFence.y+mFence.h);miniCtx.lineTo(mFence.x,mFence.y+mFence.h);miniCtx.closePath();mHousePath();miniCtx.clip('evenodd');
+  miniCtx.fillStyle='rgba(255,59,59,0.25)'; miniCtx.fillRect(mFence.x,mFence.y,mFence.w,mFence.h);miniCtx.restore();
+
+  miniCtx.save();miniCtx.beginPath();mHousePath();miniCtx.clip();miniCtx.fillStyle='#141e2e';miniCtx.fillRect(mFence.x,mFence.y,mFence.w,mFence.h);miniCtx.restore();
+  for(const cam of mCams) drawCoverage2d(miniCtx,cam,mFence,mPoly);
+  miniCtx.save();miniCtx.beginPath();mHousePath();miniCtx.clip();miniCtx.fillStyle='#141e2e';miniCtx.fillRect(mFence.x,mFence.y,mFence.w,mFence.h);miniCtx.restore();
+  miniCtx.save();miniCtx.beginPath();mHousePath();miniCtx.strokeStyle='#ff4444';miniCtx.lineWidth=1.2;miniCtx.stroke();miniCtx.restore();
+  miniCtx.strokeStyle='#5599ff';miniCtx.lineWidth=1.2;miniCtx.strokeRect(mFence.x,mFence.y,mFence.w,mFence.h);
+  for(const cam of mCams) drawCamera2d(miniCtx,cam,false);
+}
+document.getElementById('minimap').addEventListener('click',close3D);
+
+// ════════════════════════════════════════════════
+//  THREE.JS 3D SCENE — GLB MODEL LOADED
+// ════════════════════════════════════════════════
+let renderer3d, scene3d, camera3d, animFrameId;
+//let camTop, camFront, camSide;
+// ── 4 Viewport cameras ──
+let camTop, camFront, camSide;   // orthographic companion cameras
+let camObjects=[], coneObjects=[];
+let selected3dIdx=-1;
+let glbScene=null; // holds the loaded GLB scene group
+
+// ── Yard Blind-spot 3D Overlay ──
+let yardBlindspotMesh=null, yardBlindspotTexture=null, yardOffscreenCanvas=null;
+const YARD_TEX_SIZE=512;
+
+// Decode base64 to ArrayBuffer for GLTFLoader
+// Strip all whitespace first — critical for VS Code live server which may inject \r\n
+function base64ToArrayBuffer(b64){
+  const clean=b64.replace(/[\s\r\n]/g,'');
+  const bin=atob(clean);
+  const buf=new ArrayBuffer(bin.length);
+  const view=new Uint8Array(buf);
+  for(let i=0;i<bin.length;i++) view[i]=bin.charCodeAt(i);
+  return buf;
+}
+
+// ── Minimal GLTF loader (parses GLB binary, creates THREE meshes) ──
+function loadGLBFromArrayBuffer(ab){
+  return new Promise((resolve, reject)=>{
+    try {
+      const view = new DataView(ab);
+      // GLB header
+      const magic = view.getUint32(0, true);   // 0x46546c67
+      const version = view.getUint32(4, true);
+      const length = view.getUint32(8, true);
+
+      // JSON chunk
+      const jsonChunkLen = view.getUint32(12, true);
+      const jsonChunkType = view.getUint32(16, true);
+      const jsonBytes = new Uint8Array(ab, 20, jsonChunkLen);
+      const json = JSON.parse(new TextDecoder().decode(jsonBytes));
+
+      // BIN chunk
+      const binOffset = 20 + jsonChunkLen;
+      const binChunkLen = view.getUint32(binOffset, true);
+      const binChunkType = view.getUint32(binOffset+4, true);
+      const binData = new Uint8Array(ab, binOffset+8, binChunkLen);
+
+      // Build THREE objects
+      const group = new THREE.Group();
+
+      json.meshes.forEach((mesh, meshIdx)=>{
+        mesh.primitives.forEach(prim=>{
+          // Get position accessor
+          const posAccIdx = prim.attributes['POSITION'];
+          const posAcc = json.accessors[posAccIdx];
+          const posBV = json.bufferViews[posAcc.bufferView];
+          const posArray = new Float32Array(binData.buffer, binData.byteOffset + (posBV.byteOffset||0), posBV.byteLength/4);
+
+          // Get indices
+          let indexArray = null;
+          if(prim.indices !== undefined){
+            const idxAcc = json.accessors[prim.indices];
+            const idxBV = json.bufferViews[idxAcc.bufferView];
+            const byteOff = binData.byteOffset + (idxBV.byteOffset||0);
+            if(idxAcc.componentType === 5123){
+              indexArray = new Uint16Array(binData.buffer, byteOff, idxBV.byteLength/2);
+            } else if(idxAcc.componentType === 5125){
+              indexArray = new Uint32Array(binData.buffer, byteOff, idxBV.byteLength/4);
+            }
+          }
+
+          const geo = new THREE.BufferGeometry();
+          geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(posArray), 3));
+          if(indexArray) geo.setIndex(new THREE.BufferAttribute(new Uint16Array(indexArray), 1));
+          geo.computeVertexNormals();
+
+          // Material based on mesh name
+          const nodeName = json.nodes.find(n=>n.mesh===meshIdx)?.name || '';
+          let mat;
+          if(nodeName==='windows'){
+            mat = new THREE.MeshPhongMaterial({color:0x1a4a8a, transparent:true, opacity:0.55, side:THREE.DoubleSide, emissive:0x051020});
+          } else if(nodeName==='house' || nodeName==='Cube.003'){
+            mat = new THREE.MeshPhongMaterial({color:0x8a9a6a, side:THREE.DoubleSide, shininess:30});
+          } else {
+            // Cube (outer enclosure / fence floor)
+            mat = new THREE.MeshPhongMaterial({color:0x6a8a5a, side:THREE.DoubleSide, shininess:20, transparent:true, opacity:0.85});
+          }
+
+          const meshObj = new THREE.Mesh(geo, mat);
+          meshObj.castShadow = true;
+          meshObj.receiveShadow = true;
+          meshObj.userData.glbName = nodeName;
+          group.add(meshObj);
+
+          // Edge highlights
+          let edgeColor = 0x334444;
+          if(nodeName==='windows') edgeColor = 0x3a6ea8;
+          else if(nodeName==='house') edgeColor = 0xaabb88;
+          const edges = new THREE.EdgesGeometry(geo);
+          const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color:edgeColor, opacity:0.6, transparent:true}));
+          group.add(line);
+        });
+      });
+
+      resolve(group);
+    } catch(e){ reject(e); }
+  });
+}
+
+function setLoadStatus(msg){ document.getElementById('load-status').textContent=msg; }
+
+async function initThree(){
+  const c3=document.getElementById('three-canvas');
+  renderer3d=new THREE.WebGLRenderer({canvas:c3, antialias:true});
+  renderer3d.setPixelRatio(window.devicePixelRatio);
+  renderer3d.shadowMap.enabled=true;
+  renderer3d.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer3d.setClearColor(0x060a10);
+
+  scene3d=new THREE.Scene();
+  scene3d.fog=new THREE.Fog(0x060a10, 18, 40);
+
+  camera3d=new THREE.PerspectiveCamera(55,1,0.1,100);
+  camera3d.position.set(0,10,12);
+  camera3d.lookAt(0,0,0);
+  camTop=new THREE.OrthographicCamera(-8,8,8,-8,0.1,100);
+  camTop.position.set(0,20,0); camTop.lookAt(0,0,0); camTop.up.set(0,0,-1);
+
+  camFront=new THREE.OrthographicCamera(-8,8,6,-6,0.1,100);
+  camFront.position.set(0,2,20); camFront.lookAt(0,0,0);
+
+  camSide=new THREE.OrthographicCamera(-8,8,6,-6,0.1,100);
+  camSide.position.set(20,2,0); camSide.lookAt(0,0,0);
+
+  // ── 4 Viewport: orthographic cameras ──
+  renderer3d.autoClear = false;
+  const orthoSize = 8;
+  const aspect = 1; // will be corrected by onResize3d
+  camTop   = new THREE.OrthographicCamera(-orthoSize,orthoSize,-orthoSize,orthoSize, 0.1, 200);
+  camTop.position.set(0, 30, 0);
+  camTop.lookAt(0, 0, 0);
+  camTop.up.set(0, 0, -1);
+
+  camFront = new THREE.OrthographicCamera(-orthoSize,orthoSize,-orthoSize,orthoSize, 0.1, 200);
+  camFront.position.set(0, 0, 30);
+  camFront.lookAt(0, 0, 0);
+
+  camSide  = new THREE.OrthographicCamera(-orthoSize,orthoSize,-orthoSize,orthoSize, 0.1, 200);
+  camSide.position.set(30, 0, 0);
+  camSide.lookAt(0, 0, 0);
+
+  // Lights
+  scene3d.add(new THREE.AmbientLight(0x2a3850, 1.5));
+  const sun=new THREE.DirectionalLight(0xffffff, 1.2);
+  sun.position.set(8,12,6); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048);
+  scene3d.add(sun);
+  const fill=new THREE.PointLight(0x00aaff, 0.6, 25);
+  fill.position.set(-3,5,0); scene3d.add(fill);
+  const warm=new THREE.PointLight(0xffaa44, 0.3, 20);
+  warm.position.set(3,3,3); scene3d.add(warm);
+
+  // Grid
+  const grid=new THREE.GridHelper(20,20,0x1e2d45,0x1e2d45);
+  grid.position.y=-1.45;
+  scene3d.add(grid);
+
+  setLoadStatus('Loading house model...');
+  let ab;
+  try {
+    const res = await fetch('House_project4.glb');
+    if(!res.ok) throw new Error('fetch failed: '+res.status);
+    ab = await res.arrayBuffer();
+  } catch(e) {
+    setLoadStatus('Error: '+e.message+' — make sure House_project3.glb is in the same folder');
+    console.error(e); return;
+  }
+
+  setLoadStatus('Building meshes...');
+  glbScene=await loadGLBFromArrayBuffer(ab);
+
+  // Center and scale the GLB model
+  const bbox=new THREE.Box3().setFromObject(glbScene);
+  const center=bbox.getCenter(new THREE.Vector3());
+  const size=bbox.getSize(new THREE.Vector3());
+  const maxDim=Math.max(size.x,size.y,size.z);
+  const targetSize=9.0; // units we want the model to span
+  const scale=targetSize/maxDim;
+  glbScene.scale.setScalar(scale);
+  // re-center after scale
+  const bbox2=new THREE.Box3().setFromObject(glbScene);
+  const center2=bbox2.getCenter(new THREE.Vector3());
+  glbScene.position.sub(center2);
+  // Sit on grid
+  const bbox3=new THREE.Box3().setFromObject(glbScene);
+  glbScene.position.y -= bbox3.min.y + 1.45;
+
+  scene3d.add(glbScene);
+
+  // Record scaled model bounds for camera placement
+  const bbox4=new THREE.Box3().setFromObject(glbScene);
+  MODEL._scaledBounds=bbox4;
+
+  // ── Initialize yard blind-spot overlay ──
+  initYardBlindspot();
+
+  setLoadStatus('Placing cameras...');
+  // Pre-load camera GLB template so it's ready when cameras are placed
+  loadCameraTemplate();
+  setupOrbit();
+  animate3d();
+  onResize3d();
+  window.addEventListener('resize',onResize3d);
+
+  update3DCameras();
+
+  // Hide loading overlay
+  setLoadStatus('Done!');
+  setTimeout(()=>{
+    const ld=document.getElementById('loading3d');
+    ld.classList.add('hidden');
+    setTimeout(()=>{ld.style.display='none'},600);
+  },400);
+}
+
+// Convert 2D canvas coordinates → 3D world XZ
+function canvas2dToWorld(cam){
+  // 2D: fence normalized [0..1]
+  const nx=(cam.x-fence.x)/fence.w;  // 0=left,1=right
+  const nz=(cam.y-fence.y)/fence.h;  // 0=top,1=bottom
+
+  if(!MODEL._scaledBounds){
+    // fallback
+    return {x:(nx-0.5)*8, z:(nz-0.5)*8};
+  }
+  const b=MODEL._scaledBounds;
+  const wx=b.min.x + nx*(b.max.x-b.min.x);
+  const wz=b.min.z + nz*(b.max.z-b.min.z);
+  return {x:wx, z:wz};
+}
+
+function update3DCameras(){
+  if(!scene3d) return;
+  for(const o of camObjects){if(o.parent)scene3d.remove(o);}
+  for(const o of coneObjects){if(o.parent)scene3d.remove(o);}
+  camObjects=[]; coneObjects=[];
+  document.getElementById('count3').textContent=cameras.length;
+
+  // If camera template not loaded yet, request it and re-render when ready
+  if(!_camMeshTemplate && cameras.length>0){
+    loadCameraTemplate().then(()=>{ if(scene3d) update3DCameras(); });
+  }
+
+  let fenceTopY=0.5, houseTopY=2.0;
+  if(MODEL._scaledBounds){
+    fenceTopY=MODEL._scaledBounds.max.y+0.1;
+    houseTopY=MODEL._scaledBounds.max.y*0.85;
+  }
+
+  cameras.forEach((cam,i)=>{
+    const wp=canvas2dToWorld(cam);
+    const baseY=cam.onHouse?houseTopY:fenceTopY;
+    const heightOffset=cam.heightOffset||0;
+    const camY=baseY+heightOffset;
+    const tiltDeg=cam.tiltDeg!=null?cam.tiltDeg:-45;
+    const isSelected=(i===selected3dIdx);
+
+    // Shared orientation — used by both camera body and frustum
+    const yaw   = -(cam.angle + Math.PI/2);  // THREE yaw: -Z → cam.angle direction
+    const pitch = (tiltDeg * Math.PI / 180); // negative = tilt down
+
+    // ── Camera body: camera.glb (or fallback sphere) ──
+    const isRotating=(i===rotating3dIdx);
+    const camColor=isRotating?0xffcc00:(isSelected?0x00e5ff:(cam.onHouse?0xffa040:0x7ab8ff));
+
+    // yaw and pitch declared above — same values used for frustum alignment
+
+    let camGroup;
+    if(_camMeshTemplate){
+      camGroup = _camMeshTemplate.clone(true);
+      camGroup.traverse(child=>{
+        if(child.isMesh){
+          child.material = child.material.clone();
+          child.material.color.setHex(camColor);
+          child.material.emissive = new THREE.Color(isSelected ? 0x002233 : 0x000000);
+          child.material.emissiveIntensity = isSelected ? 0.6 : 0;
+        }
+      });
+    } else {
+      // Fallback: small sphere until camera.glb loads
+      const camGeo = new THREE.SphereGeometry(0.14, 10, 10);
+      const camFallback = new THREE.Mesh(camGeo, new THREE.MeshBasicMaterial({color:camColor}));
+      camGroup = new THREE.Group(); camGroup.add(camFallback);
+    }
+
+    // Apply same yaw+pitch as the frustum so the camera body points the right way
+    // +PI/2 offset aligns the camera model's front (lens) with the frustum's -Z forward axis
+    camGroup.rotation.order = 'YXZ';
+    camGroup.rotation.y = yaw + Math.PI / 2;
+    camGroup.rotation.x = pitch;
+    camGroup.position.set(wp.x, camY, wp.z);
+    camGroup.userData = {camIdx:i, isCamBody:true};
+    scene3d.add(camGroup); camObjects.push(camGroup);
+
+    // ── Glow ring (selected) ──
+    if(isSelected||isRotating){
+      const ringColor=isRotating?0xffcc00:0x00e5ff;
+      const ringGeo=new THREE.RingGeometry(0.18,0.28,24);
+      const ring=new THREE.Mesh(ringGeo,new THREE.MeshBasicMaterial({color:ringColor,side:THREE.DoubleSide,transparent:true,opacity:0.65}));
+      ring.rotation.x=-Math.PI/2; ring.position.set(wp.x,camY+0.01,wp.z);
+      scene3d.add(ring); coneObjects.push(ring);
+    }
+
+    // ── Mounting pole ──
+    const poleH=Math.max(0.15,(cam.onHouse?0.35:1.4)+heightOffset);
+    const pole=new THREE.Mesh(
+      new THREE.CylinderGeometry(0.035,0.035,poleH),
+      new THREE.MeshLambertMaterial({color:0x334466})
+    );
+    pole.position.set(wp.x,camY-poleH/2,wp.z);
+    scene3d.add(pole); camObjects.push(pole);
+
+    // ── 3D Frustum (field of view) ──
+    const fenceSpan=MODEL._scaledBounds?(MODEL._scaledBounds.max.x-MODEL._scaledBounds.min.x):9;
+    const rangeFraction=cam.range/Math.min(fence.w,fence.h);
+    const coneRange=rangeFraction*fenceSpan*0.85;
+
+    // Realistic camera FOV: hFov clamped to 110°, vFov derived from 16:9 sensor aspect
+    const hFov=Math.min(cam.fov, 110);
+    // 2*atan(tan(hFov/2) * 9/16) — true 16:9 vertical FOV
+    const vFov=2*Math.atan(Math.tan((hFov*Math.PI/180)/2)*(9/16))*(180/Math.PI);
+
+    const frustumGeo=buildFrustumGeo(hFov,vFov,coneRange);
+    const frustumMat=new THREE.MeshBasicMaterial({
+      color:0x00ff88, transparent:true, opacity:0.18, side:THREE.DoubleSide, depthWrite:false
+    });
+    const frustum=new THREE.Mesh(frustumGeo,frustumMat);
+
+    // Build orientation: camera looks in 2D angle direction (Y-rotation) + tilt down (X-rotation)
+    // yaw and pitch already declared above (shared with camera body)
+
+    frustum.position.set(wp.x,camY,wp.z);
+    frustum.rotation.order='YXZ';
+    frustum.rotation.y=yaw;
+    frustum.rotation.x=pitch;
+    scene3d.add(frustum); coneObjects.push(frustum);
+
+    // ── Wireframe edges ──
+    const wireGeo=buildFrustumWire(hFov,vFov,coneRange);
+    const wire=new THREE.LineSegments(wireGeo,new THREE.LineBasicMaterial({color:0x00ff88,opacity:0.7,transparent:true}));
+    wire.position.copy(frustum.position);
+    wire.rotation.copy(frustum.rotation);
+    scene3d.add(wire); coneObjects.push(wire);
+  });
+
+  // ── Update yard blind-spot texture ──
+  updateYardCoverageTexture();
+}
+
+// ════════════════════════════════════════════════
+//  YARD BLIND-SPOT 3D OVERLAY
+// ════════════════════════════════════════════════
+function initYardBlindspot(){
+  if(!MODEL._scaledBounds) return;
+
+  // Offscreen canvas for the coverage texture
+  yardOffscreenCanvas=document.createElement('canvas');
+  yardOffscreenCanvas.width=YARD_TEX_SIZE;
+  yardOffscreenCanvas.height=YARD_TEX_SIZE;
+
+  const b=MODEL._scaledBounds;
+  const w=b.max.x-b.min.x;
+  const d=b.max.z-b.min.z;
+
+  // Flat plane covering the full fence footprint
+  const geo=new THREE.PlaneGeometry(w,d);
+  geo.rotateX(-Math.PI/2);
+
+  // CanvasTexture: flipY=true (default) is correct —
+  // canvas Y=0 (top) → UV y=1 → world z=min (fence near side) ✓
+  yardBlindspotTexture=new THREE.CanvasTexture(yardOffscreenCanvas);
+
+  const mat=new THREE.MeshBasicMaterial({
+    map:yardBlindspotTexture,
+    transparent:true,
+    depthWrite:false,
+    side:THREE.DoubleSide,
+    opacity:0.4
+  });
+
+  yardBlindspotMesh=new THREE.Mesh(geo,mat);
+  // Sit just above the grid (-1.45) so it's always visible
+  yardBlindspotMesh.position.set(
+    (b.min.x+b.max.x)/2,
+    -1.42,
+    (b.min.z+b.max.z)/2
+  );
+  scene3d.add(yardBlindspotMesh);
+  updateYardCoverageTexture();
+}
+
+function updateYardCoverageTexture(){
+  if(!yardOffscreenCanvas||!yardBlindspotTexture) return;
+  const S=YARD_TEX_SIZE;
+  const tc=yardOffscreenCanvas.getContext('2d');
+  tc.clearRect(0,0,S,S);
+
+  // House polygon in normalized fence-space [0..1]
+  // HOUSE_POLY_REL is already in fence-relative coords
+  const hPoly=HOUSE_POLY_REL;
+  const px=rx=>rx*S;
+  const py=ry=>ry*S; // flipY=true on texture, so draw standard canvas Y
+
+  function housePath(){
+    tc.moveTo(px(hPoly[0][0]),py(hPoly[0][1]));
+    for(let i=1;i<hPoly.length;i++) tc.lineTo(px(hPoly[i][0]),py(hPoly[i][1]));
+    tc.closePath();
+  }
+
+  // ── 1. Red fill: full fence area (house + yard together) ──
+  tc.save();
+  tc.fillStyle='rgba(255,40,40,1.0)';
+  tc.fillRect(0,0,S,S);
+  tc.restore();
+
+  // ── 2. Green coverage: one wedge per camera (full fence, no house exclusion) ──
+  for(const cam of cameras){
+    const nx=(cam.x-fence.x)/fence.w;
+    const ny=(cam.y-fence.y)/fence.h;
+    const nr=cam.range/Math.min(fence.w,fence.h);
+    const halfFov=(cam.fov*Math.PI/180)/2;
+    const steps=64;
+
+    tc.save();
+    // FOV wedge — no clipping, covers the full area including house
+    tc.beginPath();
+    tc.moveTo(px(nx),py(ny));
+    for(let i=0;i<=steps;i++){
+      const a=(cam.angle-halfFov)+(cam.fov*Math.PI/180)*(i/steps);
+      tc.lineTo(px(nx+Math.cos(a)*nr),py(ny+Math.sin(a)*nr));
+    }
+    tc.closePath();
+    const grd=tc.createRadialGradient(px(nx),py(ny),0,px(nx),py(ny),nr*S);
+    grd.addColorStop(0,'rgba(0,255,130,1.0)');
+    grd.addColorStop(0.55,'rgba(0,210,90,0.85)');
+    grd.addColorStop(1,'rgba(0,160,55,0.25)');
+    tc.fillStyle=grd;
+    tc.fill();
+    tc.restore();
+  }
+
+  // ── 3. Fence border glow ──
+  tc.save();
+  tc.strokeStyle='rgba(85,153,255,0.4)';
+  tc.lineWidth=4;
+  tc.strokeRect(2,2,S-4,S-4);
+  tc.restore();
+
+  yardBlindspotTexture.needsUpdate=true;
+}
+
+function buildFrustumGeo(hFovDeg, vFovDeg, range){
+  // Builds a 3D camera frustum pyramid:
+  //  - apex at origin (camera position)
+  //  - four edges spread out by hFov (horizontal) and vFov (vertical)
+  //  - points forward along -Z (camera looks along -Z before rotation)
+  const hHalf=(hFovDeg*Math.PI/180)/2;
+  const vHalf=(vFovDeg*Math.PI/180)/2;
+
+  // Four corners of the far face (in camera-local space, looking along -Z)
+  const corners=[
+    new THREE.Vector3(-Math.sin(hHalf)*range,  Math.sin(vHalf)*range, -Math.cos(hHalf)*range),
+    new THREE.Vector3( Math.sin(hHalf)*range,  Math.sin(vHalf)*range, -Math.cos(hHalf)*range),
+    new THREE.Vector3( Math.sin(hHalf)*range, -Math.sin(vHalf)*range, -Math.cos(hHalf)*range),
+    new THREE.Vector3(-Math.sin(hHalf)*range, -Math.sin(vHalf)*range, -Math.cos(hHalf)*range),
+  ];
+  const apex=new THREE.Vector3(0,0,0);
+
+  // Build triangles: 4 side faces + 1 far cap (2 tris)
+  const verts=[];
+  function tri(a,b,c){ verts.push(a.x,a.y,a.z, b.x,b.y,b.z, c.x,c.y,c.z); }
+
+  // Side faces (apex → each edge pair)
+  tri(apex,corners[0],corners[1]);
+  tri(apex,corners[1],corners[2]);
+  tri(apex,corners[2],corners[3]);
+  tri(apex,corners[3],corners[0]);
+  // Far cap
+  tri(corners[0],corners[3],corners[2]);
+  tri(corners[0],corners[2],corners[1]);
+
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
+  geo.computeVertexNormals();
+  return geo;
+}
+
+function buildFrustumWire(hFovDeg, vFovDeg, range){
+  const hHalf=(hFovDeg*Math.PI/180)/2;
+  const vHalf=(vFovDeg*Math.PI/180)/2;
+  const corners=[
+    new THREE.Vector3(-Math.sin(hHalf)*range,  Math.sin(vHalf)*range, -Math.cos(hHalf)*range),
+    new THREE.Vector3( Math.sin(hHalf)*range,  Math.sin(vHalf)*range, -Math.cos(hHalf)*range),
+    new THREE.Vector3( Math.sin(hHalf)*range, -Math.sin(vHalf)*range, -Math.cos(hHalf)*range),
+    new THREE.Vector3(-Math.sin(hHalf)*range, -Math.sin(vHalf)*range, -Math.cos(hHalf)*range),
+  ];
+  const apex=new THREE.Vector3(0,0,0);
+  const verts=[];
+  function seg(a,b){ verts.push(a.x,a.y,a.z,b.x,b.y,b.z); }
+  // Apex to each corner
+  corners.forEach(c=>seg(apex,c));
+  // Far rectangle
+  seg(corners[0],corners[1]); seg(corners[1],corners[2]);
+  seg(corners[2],corners[3]); seg(corners[3],corners[0]);
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
+  return geo;
+}
+
+// ── Orbit Controls ──
+let orbitState={mouseDown:false,rightDown:false,lastX:0,lastY:0,theta:0.6,phi:0.85,radius:14,target:new THREE.Vector3(0,0,0)};
+
+// Convert 3D world XZ → 2D canvas coords (inverse of canvas2dToWorld)
+function worldToCanvas2d(wx, wz){
+  if(!MODEL._scaledBounds) return null;
+  const b=MODEL._scaledBounds;
+  const nx=(wx-b.min.x)/(b.max.x-b.min.x);
+  const nz=(wz-b.min.z)/(b.max.z-b.min.z);
+  return {
+    x: fence.x + nx*fence.w,
+    y: fence.y + nz*fence.h
+  };
+}
+
+// Raycast from screen position into 3D scene and return ground-plane hit
+// Only the top-left (PERSPECTIVE) quadrant is interactive
+function raycastGroundPoint(clientX, clientY){
+  const c=document.getElementById('three-canvas');
+  const rect=c.getBoundingClientRect();
+  const vw=c.clientWidth/2, vh=c.clientHeight/2;
+  // Map click to the perspective viewport (top-left quadrant)
+  const lx=clientX-rect.left, ly=clientY-rect.top;
+  const mouse=new THREE.Vector2(
+    (lx/vw)*2-1,
+    -((ly)/vh)*2+1
+  );
+  const raycaster=new THREE.Raycaster();
+  raycaster.setFromCamera(mouse, camera3d);
+
+  // Try hitting any mesh in the scene first (model surfaces)
+  const allMeshes=[];
+  scene3d.traverse(o=>{if(o.isMesh) allMeshes.push(o);});
+  const hits=raycaster.intersectObjects(allMeshes);
+  if(hits.length>0){
+    const pt=hits[0].point;
+    return {x:pt.x, z:pt.z};
+  }
+  // Fallback: intersect the Y=0 ground plane
+  const plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
+  const target=new THREE.Vector3();
+  raycaster.ray.intersectPlane(plane,target);
+  if(target) return {x:target.x, z:target.z};
+  return null;
+}
+
+// Place a camera in 3D view at a given screen position
+function placeCamera3DAt(clientX, clientY){
+  const wp=raycastGroundPoint(clientX, clientY);
+  if(!wp) return;
+  const pos=worldToCanvas2d(wp.x, wp.z);
+  if(!pos) return;
+  // Clamp to fence bounds
+  const cx=Math.max(fence.x+4, Math.min(fence.x+fence.w-4, pos.x));
+  const cy=Math.max(fence.y+4, Math.min(fence.y+fence.h-4, pos.y));
+  const cam={x:cx, y:cy, angle:-Math.PI/2, fov:defaultFOV, range:defaultRange, onHouse:inHouse(cx,cy), id:Date.now()};
+  cameras.push(cam);
+  selected3dIdx=cameras.length-1;
+  updateSidebar(); update3DCameras(); render2d(); drawMinimap();
+  showSelPanel(selected3dIdx);
+  document.getElementById('goto3d-btn').style.display='flex';
+  document.getElementById('count3').textContent=cameras.length;
+  // Flash indicator
+  showDoubleTapFeedback(clientX, clientY);
+}
+
+// Visual feedback ripple on double-tap/click
+function showDoubleTapFeedback(x, y){
+  const fb=document.createElement('div');
+  fb.style.cssText=`position:fixed;left:${x-24}px;top:${y-24}px;width:48px;height:48px;border-radius:50%;border:2px solid #00ff88;pointer-events:none;z-index:999;animation:dtRipple .55s ease-out forwards`;
+  document.body.appendChild(fb);
+  setTimeout(()=>fb.remove(), 600);
+}
+
+// ── 3D rotate mode state ──
+let rotating3dIdx=-1; // index of camera being rotated in 3D
+let rotateStartAngle=0, rotateStartX=0;
+
+function enter3DRotateMode(idx, clientX){
+  rotating3dIdx=idx;
+  rotateStartAngle=cameras[idx].angle;
+  rotateStartX=clientX;
+  selected3dIdx=idx;
+  showSelPanel(idx);
+  update3DCameras();
+  // Show rotate hint
+  const hint=document.getElementById('rotate3d-hint');
+  if(hint){ hint.style.opacity='1'; setTimeout(()=>{hint.style.opacity='0';},1800); }
+}
+function exit3DRotateMode(){
+  rotating3dIdx=-1;
+}
+
+function setupOrbit(){
+  const c=document.getElementById('three-canvas');
+
+  // ── Helper: hit-test camera spheres ──
+  function hitCamera(clientX, clientY){
+    const rect=c.getBoundingClientRect();
+    // Map to the top-left (PERSPECTIVE) viewport
+    const vw=c.clientWidth/2, vh=c.clientHeight/2;
+    const lx=clientX-rect.left, ly=clientY-rect.top;
+    const mouse=new THREE.Vector2(
+      (lx/vw)*2-1,
+      -(ly/vh)*2+1
+    );
+    const ray=new THREE.Raycaster();
+    ray.setFromCamera(mouse, camera3d);
+    // Hit-test against camera body groups (works with both GLB mesh and fallback sphere)
+    const camBodies=camObjects.filter(o=>o.userData&&o.userData.isCamBody);
+    const hits=ray.intersectObjects(camBodies, true); // recursive=true to hit children
+    if(hits.length>0){
+      // Walk up to find the group with camIdx
+      let obj=hits[0].object;
+      while(obj && obj.userData.camIdx===undefined && obj.parent) obj=obj.parent;
+      if(obj && obj.userData.camIdx!==undefined) return obj.userData.camIdx;
+    }
+    return -1;
+  }
+
+  // ── Desktop: double-click on camera → rotate; on empty → place ──
+  c.addEventListener('dblclick',e=>{
+    const idx=hitCamera(e.clientX, e.clientY);
+    if(idx>=0){
+      if(rotating3dIdx===idx){ exit3DRotateMode(); }
+      else { enter3DRotateMode(idx, e.clientX); }
+    } else {
+      exit3DRotateMode();
+      placeCamera3DAt(e.clientX, e.clientY);
+    }
+  });
+
+  // ── Mouse drag: orbit OR rotate selected camera ──
+  c.addEventListener('mousedown',e=>{
+    if(e.button===0){
+      orbitState.mouseDown=true;
+      if(rotating3dIdx<0) trySelectCamera(e); // only select when not in rotate mode
+    }
+    if(e.button===2){orbitState.rightDown=true;}
+    orbitState.lastX=e.clientX; orbitState.lastY=e.clientY;
+  });
+  c.addEventListener('contextmenu',e=>e.preventDefault());
+  document.addEventListener('mouseup',()=>{orbitState.mouseDown=false;orbitState.rightDown=false;});
+  document.addEventListener('mousemove',e=>{
+    const dx=e.clientX-orbitState.lastX, dy=e.clientY-orbitState.lastY;
+    orbitState.lastX=e.clientX; orbitState.lastY=e.clientY;
+
+    if(orbitState.mouseDown && rotating3dIdx>=0 && !orbitState.rightDown){
+      // Rotate camera yaw: each pixel = ~1° of rotation
+      cameras[rotating3dIdx].angle -= dx * 0.018;
+      scheduleRebuild3d(); render2d(); drawMinimap();
+      showSelPanel(rotating3dIdx);
+      return;
+    }
+    if(orbitState.mouseDown&&!orbitState.rightDown){
+      orbitState.theta-=dx*0.008;
+      orbitState.phi=Math.max(0.1,Math.min(1.45,orbitState.phi-dy*0.008));
+    }
+    if(orbitState.rightDown){
+      const right=new THREE.Vector3(Math.cos(orbitState.theta),0,-Math.sin(orbitState.theta));
+      orbitState.target.addScaledVector(right,-dx*0.025);
+      orbitState.target.y+=dy*0.025;
+    }
+    applyOrbit();
+  });
+  c.addEventListener('wheel',e=>{
+    orbitState.radius=Math.max(3,Math.min(28,orbitState.radius+e.deltaY*0.02));
+    applyOrbit(); e.preventDefault();
+  },{passive:false});
+
+  // ── Touch: double-tap on camera → rotate mode; on empty → place ──
+  let lastTouchDist=0;
+  let lastTapTime=0, lastTapX=0, lastTapY=0;
+  let touchRotating=false;
+
+  c.addEventListener('touchstart',e=>{
+    if(e.touches.length===1){
+      const tx=e.touches[0].clientX, ty=e.touches[0].clientY;
+      orbitState.mouseDown=true;
+      orbitState.lastX=tx; orbitState.lastY=ty;
+
+      const now=Date.now();
+      const dist=Math.hypot(tx-lastTapX, ty-lastTapY);
+      if(now-lastTapTime<320 && dist<50){
+        // Double-tap
+        e.preventDefault();
+        const idx=hitCamera(tx, ty);
+        if(idx>=0){
+          if(rotating3dIdx===idx){ exit3DRotateMode(); touchRotating=false; }
+          else { enter3DRotateMode(idx, tx); touchRotating=true; }
+        } else {
+          exit3DRotateMode(); touchRotating=false;
+          placeCamera3DAt(tx, ty);
+        }
+        lastTapTime=0;
+      } else {
+        lastTapTime=now; lastTapX=tx; lastTapY=ty;
+        touchRotating=(rotating3dIdx>=0); // stay in rotate if already active
+      }
+    }
+    if(e.touches.length===2){
+      lastTouchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      exit3DRotateMode(); touchRotating=false; // two-finger = zoom, exit rotate
+    }
+  },{passive:false});
+
+  c.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    if(e.touches.length===1&&orbitState.mouseDown){
+      const dx=e.touches[0].clientX-orbitState.lastX, dy=e.touches[0].clientY-orbitState.lastY;
+      orbitState.lastX=e.touches[0].clientX; orbitState.lastY=e.touches[0].clientY;
+
+      if(touchRotating && rotating3dIdx>=0){
+        cameras[rotating3dIdx].angle -= dx * 0.022;
+        scheduleRebuild3d(); render2d(); drawMinimap();
+        showSelPanel(rotating3dIdx);
+      } else {
+        orbitState.theta-=dx*0.01;
+        orbitState.phi=Math.max(0.1,Math.min(1.45,orbitState.phi-dy*0.01));
+        applyOrbit();
+      }
+    }
+    if(e.touches.length===2){
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      orbitState.radius=Math.max(3,Math.min(28,orbitState.radius*(lastTouchDist/d)));
+      lastTouchDist=d; applyOrbit();
+    }
+  },{passive:false});
+
+  c.addEventListener('touchend',()=>{orbitState.mouseDown=false;});
+  applyOrbit();
+}
+
+function applyOrbit(){
+  const {theta,phi,radius,target}=orbitState;
+  camera3d.position.set(
+    target.x+radius*Math.sin(phi)*Math.sin(theta),
+    target.y+radius*Math.cos(phi),
+    target.z+radius*Math.sin(phi)*Math.cos(theta)
+  );
+  camera3d.lookAt(target);
+  if(!camTop) return;
+
+  const s=radius/14;
+  const D=30;
+
+  // TOP: straight down, rotates with theta so "forward" matches perspective
+  camTop.position.set(target.x,target.y+D,target.z);
+  camTop.up.set(Math.sin(theta),0,Math.cos(theta));
+  camTop.lookAt(target);
+
+  // FRONT: faces from perspective's horizontal direction
+  camFront.position.set(
+    target.x+D*Math.sin(theta),
+    target.y,
+    target.z+D*Math.cos(theta)
+  );
+  camFront.up.set(0,1,0);
+  camFront.lookAt(target);
+
+  // SIDE: 90° offset from front
+  camSide.position.set(
+    target.x+D*Math.cos(theta),
+    target.y,
+    target.z-D*Math.sin(theta)
+  );
+  camSide.up.set(0,1,0);
+  camSide.lookAt(target);
+
+  // Zoom ortho frustum with radius
+  [camTop,camFront,camSide].forEach(cam=>{
+    cam.left=-8*s; cam.right=8*s;
+    cam.top=8*s;   cam.bottom=-8*s;
+    cam.updateProjectionMatrix();
+  });
+}
+
+function trySelectCamera(e){
+  const c=document.getElementById('three-canvas');
+  const rect=c.getBoundingClientRect();
+  // Map to the top-left (PERSPECTIVE) viewport
+  const vw=c.clientWidth/2, vh=c.clientHeight/2;
+  const lx=e.clientX-rect.left, ly=e.clientY-rect.top;
+  const mouse=new THREE.Vector2(
+    (lx/vw)*2-1,
+    -(ly/vh)*2+1
+  );
+  const raycaster=new THREE.Raycaster();
+  raycaster.setFromCamera(mouse,camera3d);
+  const camBodies=camObjects.filter(o=>o.userData&&o.userData.isCamBody);
+  const hits=raycaster.intersectObjects(camBodies, true);
+  if(hits.length>0){
+    let obj=hits[0].object;
+    while(obj && obj.userData.camIdx===undefined && obj.parent) obj=obj.parent;
+    const idx=obj&&obj.userData.camIdx;
+    if(idx!==undefined){selected3dIdx=idx; showSelPanel(idx); update3DCameras();}
+  } else {selected3dIdx=-1; hideSelPanel(); update3DCameras();}
+}
+
+function showSelPanel(idx){
+  const panel=document.getElementById('sel-panel');
+  const cam=cameras[idx];
+  panel.classList.add('visible');
+  document.getElementById('sel-title').textContent=`CAM-${String(idx+1).padStart(2,'0')} ${cam.onHouse?'🏠':'🌿'}`;
+  document.getElementById('sp-fov').value=cam.fov;
+  document.getElementById('sp-fov-val').textContent=cam.fov+'°';
+  const fenceSpan=MODEL._scaledBounds?(MODEL._scaledBounds.max.x-MODEL._scaledBounds.min.x):9;
+  const fr=cam.range/Math.min(fence.w,fence.h);
+  const cr=+(fr*fenceSpan*0.85).toFixed(1);
+  document.getElementById('sp-range').value=cr;
+  document.getElementById('sp-range-val').textContent=cr.toFixed(1);
+  const h=cam.heightOffset||0;
+  document.getElementById('sp-height').value=h;
+  document.getElementById('sp-height-val').textContent=h.toFixed(1)+'m';
+  const t=cam.tiltDeg!=null?cam.tiltDeg:-45;
+  document.getElementById('sp-tilt').value=t;
+  document.getElementById('sp-tilt-val').textContent=t+'°';
+}
+function hideSelPanel(){document.getElementById('sel-panel').classList.remove('visible');}
+function sp_fov(v){
+  document.getElementById('sp-fov-val').textContent=v+'°';
+  if(selected3dIdx>=0){cameras[selected3dIdx].fov=+v; scheduleRebuild3d(); render2d(); drawMinimap();}
+}
+function sp_range(v){
+  document.getElementById('sp-range-val').textContent=(+v).toFixed(1);
+  if(selected3dIdx>=0){
+    const fenceSpan=MODEL._scaledBounds?(MODEL._scaledBounds.max.x-MODEL._scaledBounds.min.x):9;
+    const fraction=+v/(fenceSpan*0.85);
+    cameras[selected3dIdx].range=fraction*Math.min(fence.w,fence.h);
+    scheduleRebuild3d(); render2d(); drawMinimap();
+  }
+}
+function sp_height(v){
+  document.getElementById('sp-height-val').textContent=(+v).toFixed(1)+'m';
+  if(selected3dIdx>=0){cameras[selected3dIdx].heightOffset=+v; scheduleRebuild3d();}
+}
+function sp_tilt(v){
+  document.getElementById('sp-tilt-val').textContent=v+'°';
+  if(selected3dIdx>=0){cameras[selected3dIdx].tiltDeg=+v; scheduleRebuild3d();}
+}
+function delete3DCam(){
+  if(selected3dIdx<0) return;
+  cameras.splice(selected3dIdx,1);
+  selected3dIdx=-1; hideSelPanel();
+  updateSidebar(); update3DCameras(); render2d(); drawMinimap();
+  if(cameras.length===0) document.getElementById('goto3d-btn').style.display='none';
+}
+function add3DCamera(){
+  // Place new camera at a random unoccupied position in the fence yard area
+  const margin=0.12;
+  let nx,nz,attempts=0;
+  do {
+    nx=margin+Math.random()*(1-margin*2);
+    nz=margin+Math.random()*(1-margin*2);
+    attempts++;
+  } while(attempts<30);
+  // Convert normalized fence pos → 2D canvas coords
+  const cx=fence.x+nx*fence.w;
+  const cy=fence.y+nz*fence.h;
+  const cam={x:cx,y:cy,angle:-Math.PI/2,fov:defaultFOV,range:defaultRange,onHouse:inHouse(cx,cy),id:Date.now()};
+  cameras.push(cam);
+  selected3dIdx=cameras.length-1;
+  updateSidebar(); update3DCameras(); render2d(); drawMinimap();
+  showSelPanel(selected3dIdx);
+  document.getElementById('goto3d-btn').style.display='flex';
+  document.getElementById('count3').textContent=cameras.length;
+}
+
+function animate3d(){
+  animFrameId=requestAnimationFrame(animate3d);
+  if(selected3dIdx>=0||rotating3dIdx>=0){
+    const t=Date.now()*0.002;
+    const activeIdx=rotating3dIdx>=0?rotating3dIdx:selected3dIdx;
+    camObjects.forEach(o=>{
+      if(o.userData&&o.userData.isCamBody&&o.userData.camIdx===activeIdx){
+        const s=1+Math.sin(t)*0.12; o.scale.set(s,s,s);
+      }
+    });
+  }
+  renderViewports();
+}
+
+function renderViewports(){
+  if(!camTop){ renderer3d.render(scene3d,camera3d); return; }
+  const c3=document.getElementById('three-canvas');
+  const tw=c3.clientWidth, th=c3.clientHeight;
+  const vw=Math.floor(tw/2), vh=Math.floor(th/2);
+
+  renderer3d.setScissorTest(true);
+
+  renderer3d.setScissor(0,vh,vw,vh); renderer3d.setViewport(0,vh,vw,vh);
+  renderer3d.setClearColor(0x060a10); renderer3d.clear();
+  renderer3d.render(scene3d,camera3d);
+
+  renderer3d.setScissor(vw,vh,vw,vh); renderer3d.setViewport(vw,vh,vw,vh);
+  renderer3d.setClearColor(0x04100a); renderer3d.clear();
+  renderer3d.render(scene3d,camTop);
+
+  renderer3d.setScissor(0,0,vw,vh); renderer3d.setViewport(0,0,vw,vh);
+  renderer3d.setClearColor(0x0d0c04); renderer3d.clear();
+  renderer3d.render(scene3d,camFront);
+
+  renderer3d.setScissor(vw,0,vw,vh); renderer3d.setViewport(vw,0,vw,vh);
+  renderer3d.setClearColor(0x100404); renderer3d.clear();
+  renderer3d.render(scene3d,camSide);
+
+  renderer3d.setScissorTest(false);
+}
+
+function syncOrthoZoom(){
+  if(!camTop||!camFront||!camSide) return;
+  const c=document.getElementById('three-canvas');
+  const vpAspect=(c.clientWidth/2)/Math.max(1,(c.clientHeight/2));
+  const orthoH = orbitState.radius * 0.6;   // tied to same zoom as perspective
+  const orthoW = orthoH * vpAspect;
+  [camTop,camFront,camSide].forEach(cam=>{
+    cam.left=-orthoW; cam.right=orthoW;
+    cam.top=orthoH; cam.bottom=-orthoH;
+    cam.updateProjectionMatrix();
+  });
+}
+
+function onResize3d(){
+  const c=document.getElementById('three-canvas');
+  const w=c.clientWidth, h=c.clientHeight;
+  renderer3d.setSize(w,h);
+  camera3d.aspect=(w/2)/(h/2); camera3d.updateProjectionMatrix();
+  if(!camTop) return;
+  const a=(w/2)/(h/2);
+  [camTop,camFront,camSide].forEach(cam=>{
+    cam.left=-8*a; cam.right=8*a; cam.updateProjectionMatrix();
+  });
+}
+
+// ════════════════════════════════════════════════
+//  VIEW SWITCHING
+// ════════════════════════════════════════════════
+let threeInitialized=false;
+
+function open3D(){
+  const v=document.getElementById('view3d');
+  v.style.display='flex';
+  requestAnimationFrame(()=>{v.style.opacity='1';});
+
+  // Show loading overlay
+  const ld=document.getElementById('loading3d');
+  if(!threeInitialized){
+    ld.style.display='flex'; ld.classList.remove('hidden'); ld.style.opacity='1';
+  }
+
+  if(!threeInitialized){
+    threeInitialized=true;
+    initThree().catch(e=>{
+      console.error('3D init error:',e);
+      setLoadStatus('Error loading model: '+e.message);
+    });
+  } else {
+    update3DCameras(); onResize3d();
+  }
+
+  drawMinimap();
+
+  setTimeout(()=>{
+    const dh=document.getElementById('drag-hint');
+    if(dh){dh.style.opacity='0'; setTimeout(()=>{dh.style.display='none'},600);}
+  },3500);
+}
+
+function close3D(){
+  const v=document.getElementById('view3d');
+  v.style.opacity='0';
+  setTimeout(()=>{v.style.display='none';},400);
+  render2d();
+}
+
+// Also show "Continue to 3D" if cameras exist (useful on reload)
+function checkShowBtn(){
+  if(cameras.length>0) document.getElementById('goto3d-btn').style.display='flex';
+}
+
+// ════════════════════════════════════════════════
+//  GESTURE MODE — MediaPipe Hand Tracking
+// ════════════════════════════════════════════════
+let gestureActive = false;
+let gestureVideo = null;
+let gestureCamera = null;
+let gestureHands = null;
+let gestureInitialised = false;
+let gestureHandHistory = { x: [], y: [], maxSize: 12 };
+let gesturePrevPinchDist = null;
+let gestureActionTimer = null;
+let gestureLastGesture = '';
+
+function showGestureAction(msg) {
+  if (gestureLastGesture === msg) return;
+  gestureLastGesture = msg;
+  const el = document.getElementById('gesture-action');
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.opacity = '1';
+  clearTimeout(gestureActionTimer);
+  gestureActionTimer = setTimeout(() => {
+    el.style.opacity = '0';
+    setTimeout(() => { el.style.display = 'none'; gestureLastGesture = ''; }, 300);
+  }, 900);
+}
+
+function setGestureStatus(msg) {
+  const el = document.getElementById('g-status');
+  if (el) el.textContent = msg;
+}
+
+function onGestureResults(results) {
+  const hands = results.multiHandLandmarks || [];
+
+  const countEl = document.getElementById('g-hand-count');
+  if (countEl) countEl.textContent = hands.length;
+  setGestureStatus(hands.length > 0 ? '✅ Detecting' : '⏳ Waiting...');
+
+  if (!gestureActive || !scene3d) return;
+  if (hands.length === 0) { gesturePrevPinchDist = null; return; }
+
+  const landmarks = hands[0]; // use first hand
+  const palmCenter = landmarks[9]; // palm center landmark
+
+  // ── PINCH: thumb tip (4) ↔ index tip (8) → zoom ──
+  const thumbTip = landmarks[4];
+  const indexTip = landmarks[8];
+
+  const dx = (thumbTip.x - indexTip.x) * 4;
+  const dy = (thumbTip.y - indexTip.y) * 4;
+  const dz = (thumbTip.z - indexTip.z) * 2;
+  const pinchDist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+  if (pinchDist < 0.65) {
+    // Pinch active — use delta from last frame to drive zoom
+    if (gesturePrevPinchDist !== null) {
+      const delta = gesturePrevPinchDist - pinchDist; // positive = fingers closing = zoom in
+      orbitState.radius = Math.max(3, Math.min(28, orbitState.radius - delta * 12));
+      applyOrbit();
+      showGestureAction('🤏 Pinch — Zoom');
+    }
+    gesturePrevPinchDist = pinchDist;
+    gestureHandHistory.x = [];
+    gestureHandHistory.y = [];
+    return; // pinch takes priority, skip grab/swipe
+  } else {
+    gesturePrevPinchDist = null;
+  }
+
+  // ── OPEN HAND: finger spread → orbit pan ──
+  const fingerSpread = Math.hypot(
+    landmarks[8].x - landmarks[12].x,
+    landmarks[8].y - landmarks[12].y
+  );
+
+  if (fingerSpread > 0.07) {
+    // Open hand — map palm movement to orbit theta/phi
+    const handX = palmCenter.x; // 0=left, 1=right
+    const handY = palmCenter.y; // 0=top, 1=bottom
+
+    gestureHandHistory.x.push(handX);
+    gestureHandHistory.y.push(handY);
+    if (gestureHandHistory.x.length > gestureHandHistory.maxSize) {
+      gestureHandHistory.x.shift();
+      gestureHandHistory.y.shift();
+    }
+
+    if (gestureHandHistory.x.length === gestureHandHistory.maxSize) {
+      const n = gestureHandHistory.maxSize;
+      const dxSwipe = (gestureHandHistory.x[n - 1] - gestureHandHistory.x[0]) * 10;
+      const dySwipe = (gestureHandHistory.y[n - 1] - gestureHandHistory.y[0]) * 10;
+
+      // Left/right swipe → rotate orbit (theta)
+      if (Math.abs(dxSwipe) > 0.4) {
+        orbitState.theta -= dxSwipe * 0.045;
+        applyOrbit();
+        showGestureAction('👋 Swipe — Rotate');
+      }
+
+      // Up/down swipe → tilt orbit (phi)
+      if (Math.abs(dySwipe) > 0.4) {
+        orbitState.phi = Math.max(0.1, Math.min(1.45, orbitState.phi + dySwipe * 0.045));
+        applyOrbit();
+        showGestureAction('✋ Move — Tilt');
+      }
+    }
+  } else {
+    gestureHandHistory.x = [];
+    gestureHandHistory.y = [];
+  }
+}
+
+function initGestureSystem() {
+  return new Promise((resolve, reject) => {
+    if (gestureInitialised) { resolve(); return; }
+
+    setGestureStatus('Loading webcam...');
+
+    gestureVideo = document.createElement('video');
+    gestureVideo.style.display = 'none';
+    document.body.appendChild(gestureVideo);
+
+    gestureHands = new Hands({
+      locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+
+    gestureHands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.55
+    });
+
+    gestureHands.onResults(onGestureResults);
+
+    gestureCamera = new Camera(gestureVideo, {
+      onFrame: async () => {
+        if (gestureHands && gestureActive) {
+          await gestureHands.send({ image: gestureVideo });
+        }
+      },
+      width: 640,
+      height: 480
+    });
+
+    gestureCamera.start().then(() => {
+      gestureInitialised = true;
+      setGestureStatus('Ready');
+      resolve();
+    }).catch(err => {
+      setGestureStatus('Webcam error');
+      reject(err);
+    });
+  });
+}
+
+async function toggleGestureMode() {
+  const btn = document.getElementById('gesture-btn');
+  const hud = document.getElementById('gesture-hud');
+  const hint = document.getElementById('gesture-exit-hint');
+
+  if (gestureActive) {
+    // Deactivate
+    gestureActive = false;
+    btn.classList.remove('active');
+    btn.textContent = '🖐️ Gesture Mode';
+    hud.classList.remove('active');
+    hint.classList.remove('active');
+    document.getElementById('gesture-action').style.display = 'none';
+    setGestureStatus('Standby');
+    gesturePrevPinchDist = null;
+    gestureHandHistory = { x: [], y: [], maxSize: 12 };
+  } else {
+    // Activate
+    btn.textContent = '⏳ Starting...';
+    btn.style.opacity = '0.6';
+
+    try {
+      await initGestureSystem();
+    } catch (e) {
+      console.error('Gesture init error:', e);
+      alert('Could not access webcam. Please allow camera permission and try again.');
+      btn.textContent = '🖐️ Gesture Mode';
+      btn.style.opacity = '1';
+      return;
+    }
+
+    gestureActive = true;
+    btn.classList.add('active');
+    btn.textContent = '🖐️ Gesture ON';
+    btn.style.opacity = '1';
+    hud.classList.add('active');
+    hint.classList.add('active');
+    setGestureStatus('Detecting...');
+  }
+}
+
+// ── Spacebar exits gesture mode ──
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' && gestureActive) {
+    e.preventDefault();
+    toggleGestureMode();
+  }
+});
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+window.addEventListener('resize',()=>{resize2d(); if(threeInitialized) onResize3d();});
+resize2d();
+updateHint();
+</script>
 </body>
 </html>
