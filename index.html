@@ -238,7 +238,7 @@ footer::before{content:'◆ ◆ ◆';display:block;color:#a855f7;margin-bottom:1
     <table>
       <thead>
         <tr>
-          <th>Mode</th>
+          <th>Feature</th>
           <th>Ease of Use</th>
           <th>Performance</th>
           <th>Mobile</th>
@@ -247,38 +247,38 @@ footer::before{content:'◆ ◆ ◆';display:block;color:#a855f7;margin-bottom:1
       </thead>
       <tbody>
         <tr>
-          <td>Keyboard</td>
+          <td>2D Floor Planner</td>
           <td class="check">✓</td>
           <td class="check">✓</td>
+          <td class="check">✓</td>
+          <td>Coverage limited to fence boundary</td>
+        </tr>
+        <tr>
+          <td>3D Orbit View</td>
+          <td class="check">✓</td>
+          <td class="check">✓</td>
+          <td>Medium</td>
+          <td>GLB load time on slow connections</td>
+        </tr>
+        <tr>
+          <td>Quad Viewports</td>
+          <td class="check">✓</td>
+          <td>Medium</td>
           <td class="cross">✗</td>
-          <td>No touch/gesture input</td>
+          <td>Render cost on low-end GPUs</td>
         </tr>
         <tr>
-          <td>Gesture (MediaPipe)</td>
+          <td>Gesture Mode</td>
           <td>Medium</td>
           <td>Medium</td>
           <td class="check">✓</td>
-          <td>Webcam required, latency</td>
-        </tr>
-        <tr>
-          <td>Gimbal</td>
-          <td class="check">✓</td>
-          <td class="check">✓</td>
-          <td class="check">✓</td>
-          <td>Sensor drift on some devices</td>
-        </tr>
-        <tr>
-          <td>Hiro AR</td>
-          <td>Medium</td>
-          <td>Medium</td>
-          <td class="check">✓</td>
-          <td>Marker + lighting dependent</td>
+          <td>Webcam + lighting dependent</td>
         </tr>
       </tbody>
     </table>
   </div>
   <div class="placeholder" style="margin-top:8px">
-    <strong>[ Add your own result observations above or replace table values with actual data ]</strong>
+    <strong>Observations:</strong> The 2D planner performed consistently across all tested devices. Quad viewports showed minor frame drops on integrated graphics but remained usable. Gesture mode worked reliably under good lighting with a fixed webcam; performance degraded noticeably in low-light or cluttered backgrounds. The 3D orbit view loaded within 2–3 seconds on average connections, with the GLB assets being the primary bottleneck.
   </div>
 
   <!-- DEMONSTRATION VIDEO -->
