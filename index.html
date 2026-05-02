@@ -4,624 +4,143 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3D Geometric Transformation Visualizer</title>
-
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Segoe UI', -apple-system, sans-serif;
-  background: linear-gradient(-45deg, #0a0e27, #1a0033, #2d0052, #0f172a);
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
-  color: #e5e7eb;
-  min-height: 100vh;
-  position: relative;
-  overflow-x: hidden;
-}
-
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* Floating background elements */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 40% 20%, rgba(14, 165, 233, 0.1) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-body::after {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23a855f7' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.03;
-  animation: drift 20s linear infinite;
-}
-
-@keyframes drift {
-  0% { transform: translate(0, 0); }
-  100% { transform: translate(60px, 60px); }
-}
-
-.container {
-  display: flex;
-  min-height: 100vh;
-  position: relative;
-  z-index: 1;
-}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',-apple-system,sans-serif;background:linear-gradient(-45deg,#0a0e27,#1a0033,#2d0052,#0f172a);background-size:400% 400%;animation:gradientShift 15s ease infinite;color:#e5e7eb;min-height:100vh;position:relative;overflow-x:hidden}
+@keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 20% 50%,rgba(168,85,247,0.1) 0%,transparent 50%),radial-gradient(circle at 80% 80%,rgba(236,72,153,0.1) 0%,transparent 50%),radial-gradient(circle at 40% 20%,rgba(14,165,233,0.1) 0%,transparent 50%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23a855f7' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.03;animation:drift 20s linear infinite}
+@keyframes drift{0%{transform:translate(0,0)}100%{transform:translate(60px,60px)}}
+.container{display:flex;min-height:100vh;position:relative;z-index:1}
 
 /* SIDEBAR */
-.sidebar {
-  width: 320px;
-  background: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
-  padding: 0;
-  position: fixed;
-  height: 100vh;
-  overflow-y: auto;
-  border-right: 2px solid;
-  border-image: linear-gradient(180deg, #a855f7 0%, #ec4899 50%, #0ea5e9 100%) 1;
-  box-shadow: 0 0 40px rgba(168, 85, 247, 0.3), inset 0 0 40px rgba(168, 85, 247, 0.05);
-  backdrop-filter: blur(10px);
-}
-
-.sidebar-header {
-  background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #06b6d4 100%);
-  padding: 30px 25px;
-  text-align: center;
-  color: white;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  position: relative;
-  overflow: hidden;
-}
-
-.sidebar-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  animation: shimmer 3s infinite;
-}
-
-@keyframes shimmer {
-  0% { left: -100%; }
-  100% { left: 100%; }
-}
-
-.sidebar-header span {
-  position: relative;
-  z-index: 1;
-}
-
-.accordion-item {
-  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
-}
-
-.accordion-header {
-  padding: 18px 20px;
-  background: rgba(30, 41, 59, 0.6);
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 600;
-  color: #cbd5e1;
-  position: relative;
-  overflow: hidden;
-}
-
-.accordion-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.2), transparent);
-  transition: left 0.5s;
-}
-
-.accordion-header:hover {
-  background: rgba(51, 65, 85, 0.8);
-  color: #a855f7;
-  padding-left: 25px;
-}
-
-.accordion-header.active {
-  background: linear-gradient(90deg, rgba(168, 85, 247, 0.3) 0%, rgba(236, 72, 153, 0.2) 100%);
-  color: #a855f7;
-  border-left: 4px solid #a855f7;
-  padding-left: 16px;
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
-}
-
-.accordion-icon {
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  font-size: 18px;
-}
-
-.accordion-header.active .accordion-icon {
-  transform: rotate(180deg);
-  color: #ec4899;
-}
-
-.accordion-content {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  background: rgba(15, 23, 42, 0.6);
-  padding: 0;
-}
-
-.accordion-content.active {
-  max-height: 2000px;
-  padding: 20px 0;
-}
-
-.accordion-text {
-  padding: 12px 25px;
-  color: #cbd5e1;
-  font-size: 14px;
-  line-height: 1.7;
-  border-left: 3px solid #a855f7;
-  margin-bottom: 15px;
-  animation: fadeInText 0.5s ease;
-}
-
-@keyframes fadeInText {
-  from {
-    opacity: 0;
-    transform: translateX(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* Articles dropdown */
-.articles-dropdown {
-  padding: 0 20px 15px 20px;
-}
-
-.articles-btn {
-  width: 100%;
-  padding: 12px 14px;
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(236, 72, 153, 0.15) 100%);
-  color: #a855f7;
-  border: 1px solid rgba(168, 85, 247, 0.4);
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  transition: all 0.3s;
-  margin-bottom: 8px;
-  text-align: left;
-  position: relative;
-  overflow: hidden;
-}
-
-.articles-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: rgba(236, 72, 153, 0.2);
-  transition: left 0.3s;
-}
-
-.articles-btn:hover {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(236, 72, 153, 0.3) 100%);
-  color: #ec4899;
-  border-color: #ec4899;
-  transform: translateX(5px);
-}
-
-.article-links {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s ease;
-  padding-left: 0;
-}
-
-.article-links.active {
-  max-height: 500px;
-  padding-left: 15px;
-}
-
-.article-links a {
-  display: block;
-  padding: 10px 12px;
-  color: #cbd5e1;
-  text-decoration: none;
-  font-size: 13px;
-  border-left: 2px solid transparent;
-  margin-bottom: 6px;
-  transition: all 0.3s;
-  cursor: pointer;
-  position: relative;
-}
-
-.article-links a::before {
-  content: '✨';
-  position: absolute;
-  left: 0;
-  opacity: 0;
-  transition: all 0.3s;
-}
-
-.article-links a:hover {
-  color: #a855f7;
-  padding-left: 20px;
-  border-left-color: #a855f7;
-}
-
-.article-links a:hover::before {
-  opacity: 1;
-}
+.sidebar{width:320px;background:linear-gradient(180deg,rgba(30,41,59,.95) 0%,rgba(15,23,42,.95) 100%);padding:0;position:fixed;height:100vh;overflow-y:auto;border-right:2px solid;border-image:linear-gradient(180deg,#a855f7 0%,#ec4899 50%,#0ea5e9 100%) 1;box-shadow:0 0 40px rgba(168,85,247,.3),inset 0 0 40px rgba(168,85,247,.05);backdrop-filter:blur(10px)}
+.sidebar-header{background:linear-gradient(135deg,#a855f7 0%,#ec4899 50%,#06b6d4 100%);padding:30px 25px;text-align:center;color:#fff;font-size:18px;font-weight:700;letter-spacing:2px;position:relative;overflow:hidden}
+.sidebar-header::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);animation:shimmer 3s infinite}
+@keyframes shimmer{0%{left:-100%}100%{left:100%}}
+.sidebar-header span{position:relative;z-index:1}
+.accordion-item{border-bottom:1px solid rgba(51,65,85,.5)}
+.accordion-header{padding:18px 20px;background:rgba(30,41,59,.6);cursor:pointer;transition:all .4s cubic-bezier(.34,1.56,.64,1);display:flex;justify-content:space-between;align-items:center;font-weight:600;color:#cbd5e1;position:relative;overflow:hidden}
+.accordion-header:hover{background:rgba(51,65,85,.8);color:#a855f7;padding-left:25px}
+.accordion-header.active{background:linear-gradient(90deg,rgba(168,85,247,.3) 0%,rgba(236,72,153,.2) 100%);color:#a855f7;border-left:4px solid #a855f7;padding-left:16px;box-shadow:0 0 20px rgba(168,85,247,.2)}
+.accordion-icon{transition:transform .4s cubic-bezier(.34,1.56,.64,1);font-size:18px}
+.accordion-header.active .accordion-icon{transform:rotate(180deg);color:#ec4899}
+.accordion-content{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.34,1.56,.64,1);background:rgba(15,23,42,.6);padding:0}
+.accordion-content.active{max-height:2000px;padding:20px 0}
+.accordion-text{padding:12px 25px;color:#cbd5e1;font-size:14px;line-height:1.7;border-left:3px solid #a855f7;margin-bottom:15px;animation:fadeInText .5s ease}
+@keyframes fadeInText{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.articles-dropdown{padding:0 20px 15px 20px}
+.articles-btn{width:100%;padding:12px 14px;background:linear-gradient(135deg,rgba(168,85,247,.2) 0%,rgba(236,72,153,.15) 100%);color:#a855f7;border:1px solid rgba(168,85,247,.4);border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all .3s;margin-bottom:8px;text-align:left;position:relative;overflow:hidden}
+.articles-btn:hover{background:linear-gradient(135deg,rgba(168,85,247,.4) 0%,rgba(236,72,153,.3) 100%);color:#ec4899;border-color:#ec4899;transform:translateX(5px)}
+.article-links{max-height:0;overflow:hidden;transition:max-height .4s ease;padding-left:0}
+.article-links.active{max-height:500px;padding-left:15px}
+.article-links a{display:block;padding:10px 12px;color:#cbd5e1;text-decoration:none;font-size:13px;border-left:2px solid transparent;margin-bottom:6px;transition:all .3s;cursor:pointer}
+.article-links a:hover{color:#a855f7;padding-left:20px;border-left-color:#a855f7}
 
 /* MAIN CONTENT */
-.main-content {
-  margin-left: 320px;
-  padding: 60px 80px;
-  flex: 1;
-  max-width: 1200px;
-}
+.main-content{margin-left:320px;padding:60px 80px;flex:1;max-width:1200px}
+h1{font-size:42px;margin-bottom:25px;background:linear-gradient(135deg,#a855f7 0%,#ec4899 50%,#06b6d4 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:800;letter-spacing:-1px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+h2{font-size:26px;margin:40px 0 20px 0;color:#a855f7;border-bottom:2px solid;border-image:linear-gradient(90deg,#a855f7,#ec4899) 1;padding-bottom:12px;position:relative}
+h2::before{content:'✦';margin-right:10px;color:#ec4899}
+h3{font-size:18px;color:#ec4899;margin:20px 0 10px 0;font-weight:700}
+p{margin-bottom:18px;line-height:1.8;color:#cbd5e1;font-size:16px;transition:all .3s}
+p:hover{color:#f1f5f9;padding-left:10px}
+ul{margin-left:25px;margin-bottom:20px}
+ul li{margin-bottom:12px;color:#cbd5e1;position:relative;padding-left:15px}
+ul li::before{content:'→';position:absolute;left:0;color:#a855f7;font-weight:700}
 
-.content-section {
-  display: none;
-  animation: slideInContent 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
+.button{display:inline-block;margin-top:25px;padding:16px 40px;background:linear-gradient(135deg,#a855f7 0%,#ec4899 100%);color:#fff;font-weight:700;border-radius:10px;text-decoration:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);cursor:pointer;border:none;font-size:15px;box-shadow:0 8px 25px rgba(168,85,247,.4),0 0 20px rgba(236,72,153,.2);position:relative;overflow:hidden;margin-right:12px;margin-bottom:12px}
+.button:hover{transform:translateY(-4px);box-shadow:0 12px 35px rgba(168,85,247,.6),0 0 30px rgba(236,72,153,.4)}
+.button.btn-yt{background:linear-gradient(135deg,#ff0000 0%,#cc0000 100%);box-shadow:0 8px 25px rgba(255,0,0,.3)}
+.button.btn-yt:hover{box-shadow:0 12px 35px rgba(255,0,0,.5)}
+.button.btn-gh{background:linear-gradient(135deg,#333 0%,#555 100%);box-shadow:0 8px 25px rgba(0,0,0,.4)}
+.button.btn-gh:hover{box-shadow:0 12px 35px rgba(100,100,100,.5)}
 
-.content-section.active {
-  display: block;
-}
+/* PLACEHOLDER BLOCK */
+.placeholder{background:rgba(168,85,247,.06);border:2px dashed rgba(168,85,247,.3);border-radius:8px;padding:20px 24px;margin:16px 0;color:#6b7280;font-size:14px;font-style:italic;line-height:1.7}
+.placeholder strong{color:#a855f7;font-style:normal}
 
-@keyframes slideInContent {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* VIDEO EMBED */
+.video-wrap{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;border:2px solid rgba(236,72,153,.3);box-shadow:0 0 30px rgba(236,72,153,.2);margin:24px 0}
+.video-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+.video-placeholder{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(15,23,42,.95);color:#6b7280;font-size:14px;font-style:italic;gap:10px}
+.video-placeholder span{font-size:40px}
 
-h1 {
-  font-size: 42px;
-  margin-bottom: 25px;
-  background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #06b6d4 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 800;
-  letter-spacing: -1px;
-  animation: float 3s ease-in-out infinite;
-}
+/* PROGRESS */
+.progress-tracker{background:linear-gradient(135deg,rgba(168,85,247,.15) 0%,rgba(236,72,153,.1) 100%);padding:30px;border-radius:12px;border:2px solid rgba(168,85,247,.3);margin-top:30px;box-shadow:0 0 30px rgba(168,85,247,.2),inset 0 0 30px rgba(168,85,247,.05);backdrop-filter:blur(10px)}
+.progress-item{margin-bottom:20px}
+.progress-label{font-weight:600;color:#a855f7;margin-bottom:8px;display:flex;justify-content:space-between;font-size:14px;text-transform:uppercase;letter-spacing:1px}
+.progress-bar{width:100%;height:10px;background:rgba(51,65,85,.5);border-radius:10px;overflow:hidden;border:1px solid rgba(168,85,247,.2)}
+.progress-fill{height:100%;background:linear-gradient(90deg,#a855f7 0%,#ec4899 50%,#06b6d4 100%);border-radius:10px;animation:fillProgress 2s ease-out forwards;box-shadow:0 0 15px rgba(168,85,247,.8)}
+@keyframes fillProgress{from{width:0%}}
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
+/* COMPARISON TABLE */
+.table-wrap{overflow-x:auto;margin:20px 0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead tr{background:linear-gradient(90deg,rgba(168,85,247,.3),rgba(236,72,153,.2))}
+th{padding:12px 16px;text-align:left;color:#a855f7;font-weight:700;letter-spacing:1px;font-size:13px}
+td{padding:11px 16px;border-bottom:1px solid rgba(51,65,85,.4);color:#cbd5e1;vertical-align:top}
+tr:hover td{background:rgba(168,85,247,.05)}
+td.check{color:#00ff88;text-align:center}
+td.cross{color:#ff3b3b;text-align:center}
 
-h2 {
-  font-size: 26px;
-  margin: 40px 0 20px 0;
-  color: #a855f7;
-  border-bottom: 2px solid;
-  border-image: linear-gradient(90deg, #a855f7, #ec4899) 1;
-  padding-bottom: 12px;
-  position: relative;
-}
+footer{text-align:center;padding:40px;margin-top:60px;border-top:2px solid rgba(168,85,247,.2);color:#64748b;font-size:14px;letter-spacing:1px}
+footer::before{content:'◆ ◆ ◆';display:block;color:#a855f7;margin-bottom:15px;letter-spacing:10px}
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-track{background:rgba(15,23,42,.5)}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#a855f7,#ec4899);border-radius:10px}
 
-h2::before {
-  content: '✦';
-  margin-right: 10px;
-  color: #ec4899;
-}
-
-p {
-  margin-bottom: 18px;
-  line-height: 1.8;
-  color: #cbd5e1;
-  font-size: 16px;
-  transition: all 0.3s;
-}
-
-p:hover {
-  color: #f1f5f9;
-  padding-left: 10px;
-}
-
-ul {
-  margin-left: 25px;
-  margin-bottom: 20px;
-}
-
-ul li {
-  margin-bottom: 12px;
-  color: #cbd5e1;
-  position: relative;
-  padding-left: 15px;
-}
-
-ul li::before {
-  content: '→';
-  position: absolute;
-  left: 0;
-  color: #a855f7;
-  font-weight: bold;
-}
-
-/* BUTTON */
-.button {
-  display: inline-block;
-  margin-top: 25px;
-  padding: 16px 40px;
-  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
-  color: white;
-  font-weight: 700;
-  border-radius: 10px;
-  text-decoration: none;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  cursor: pointer;
-  border: none;
-  font-size: 15px;
-  box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4), 0 0 20px rgba(236, 72, 153, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.button::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
-}
-
-.button:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 35px rgba(168, 85, 247, 0.6), 0 0 30px rgba(236, 72, 153, 0.4);
-}
-
-.button:hover::before {
-  width: 300px;
-  height: 300px;
-}
-
-.button:active {
-  transform: translateY(-2px);
-}
-
-/* PROGRESS TRACKER */
-.progress-tracker {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(236, 72, 153, 0.1) 100%);
-  padding: 30px;
-  border-radius: 12px;
-  border: 2px solid rgba(168, 85, 247, 0.3);
-  margin-top: 30px;
-  box-shadow: 0 0 30px rgba(168, 85, 247, 0.2), inset 0 0 30px rgba(168, 85, 247, 0.05);
-  backdrop-filter: blur(10px);
-}
-
-.progress-item {
-  margin-bottom: 20px;
-}
-
-.progress-label {
-  font-weight: 600;
-  color: #a855f7;
-  margin-bottom: 8px;
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 10px;
-  background: rgba(51, 65, 85, 0.5);
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid rgba(168, 85, 247, 0.2);
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #a855f7 0%, #ec4899 50%, #06b6d4 100%);
-  border-radius: 10px;
-  animation: fillProgress 2s ease-out forwards;
-  box-shadow: 0 0 15px rgba(168, 85, 247, 0.8);
-}
-
-@keyframes fillProgress {
-  from { width: 0%; }
-}
-
-/* FOOTER */
-footer {
-  text-align: center;
-  padding: 40px;
-  margin-top: 60px;
-  border-top: 2px solid rgba(168, 85, 247, 0.2);
-  color: #64748b;
-  font-size: 14px;
-  letter-spacing: 1px;
-}
-
-footer::before {
-  content: '◆ ◆ ◆';
-  display: block;
-  color: #a855f7;
-  margin-bottom: 15px;
-  letter-spacing: 10px;
-}
-
-/* SCROLLBAR */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.5);
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #a855f7, #ec4899);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #ec4899, #06b6d4);
-}
-
-/* RESPONSIVE */
-@media (max-width: 1024px) {
-  .sidebar {
-    width: 280px;
-  }
-  
-  .main-content {
-    margin-left: 280px;
-    padding: 40px 50px;
-  }
-}
-
-@media (max-width: 768px) {
-  .container {
-    flex-direction: column;
-  }
-  
-  .sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    border-right: none;
-    border-bottom: 2px solid;
-    border-image: linear-gradient(90deg, #a855f7, #ec4899) 1;
-  }
-  
-  .main-content {
-    margin-left: 0;
-    padding: 30px 20px;
-  }
-  
-  h1 {
-    font-size: 28px;
-  }
-  
-  h2 {
-    font-size: 20px;
-  }
-}
+@media(max-width:1024px){.sidebar{width:280px}.main-content{margin-left:280px;padding:40px 50px}}
+@media(max-width:768px){.container{flex-direction:column}.sidebar{width:100%;height:auto;position:relative;border-right:none;border-bottom:2px solid;border-image:linear-gradient(90deg,#a855f7,#ec4899) 1}.main-content{margin-left:0;padding:30px 20px}h1{font-size:28px}h2{font-size:20px}}
 </style>
 </head>
-
 <body>
-
 <div class="container">
 
 <!-- SIDEBAR -->
 <div class="sidebar">
   <div class="sidebar-header"><span>✨ EXPEDITION MAP ✨</span></div>
-  
-  <!-- Overview -->
+
   <div class="accordion-item">
-    <div class="accordion-header" onclick="toggleAccordion(0, event)">
-      <span>📋 Overview</span>
-      <span class="accordion-icon">▼</span>
-    </div>
+    <div class="accordion-header" onclick="toggleAccordion(0,event)"><span>📋 Overview</span><span class="accordion-icon">▼</span></div>
     <div class="accordion-content">
-      <div class="accordion-text">
-        A psychedelic journey through abstract mathematical spaces. Watch rigid geometric concepts transform into living, breathing visual experiences. Where algebra meets imagination.
-      </div>
+      <div class="accordion-text">A psychedelic journey through abstract mathematical spaces. Watch rigid geometric concepts transform into living, breathing visual experiences. Where algebra meets imagination.</div>
     </div>
   </div>
 
-  <!-- Demo -->
   <div class="accordion-item">
-    <div class="accordion-header" onclick="toggleAccordion(1, event)">
-      <span>🚀 Live Demo</span>
-      <span class="accordion-icon">▼</span>
-    </div>
+    <div class="accordion-header" onclick="toggleAccordion(1,event)"><span>🚀 Live Demo</span><span class="accordion-icon">▼</span></div>
     <div class="accordion-content">
-      <div class="accordion-text">
-        Step into the dimensional space. Drag, pinch, tilt, and watch mathematics dance.
-      </div>
-      <div style="padding: 0 25px;">
+      <div class="accordion-text">Step into the dimensional space. Drag, pinch, tilt, and watch mathematics dance.</div>
+      <div style="padding:0 25px">
         <a class="button" href="https://graphics-pipeline-visualiser.netlify.app/" target="_blank">Enter the Realm →</a>
       </div>
     </div>
   </div>
 
-  <!-- How It Works -->
   <div class="accordion-item">
-    <div class="accordion-header" onclick="toggleAccordion(2, event)">
-      <span>⚙️ Dimensions</span>
-      <span class="accordion-icon">▼</span>
-    </div>
+    <div class="accordion-header" onclick="toggleAccordion(2,event)"><span>⚙️ Dimensions</span><span class="accordion-icon">▼</span></div>
     <div class="accordion-content">
       <div class="accordion-text">
-        <strong>Interaction Modes:</strong>
-        <ul style="margin: 12px 0 0 15px; color: #cbd5e1;">
-          <li>🖐️ Gesture Control — Hand tracking magic</li>
-          <li>🎮 Gimbal Mode — Device becomes controller</li>
-          <li>📍 Hiro AR — Real-world projection</li>
-          <li>⌨️ Keyboard — Arrow keys + Q/E</li>
+        <strong>Capabilities:</strong>
+        <ul style="margin:12px 0 0 15px;color:#cbd5e1">
+          <li>📷 2D Planner — Place & rotate cameras on a live floor plan</li>
+          <li>🏠 3D View — Full house model with real-time coverage cones</li>
+          <li>🖥️ Quad Viewports — Perspective, Top, Front & Side live together</li>
+          <li>🖐️ Gesture Mode — Orbit and zoom hands-free via webcam</li>
+          <li>📊 Coverage Stats — Blind spot analysis updated instantly</li>
+          <li>💰 Cost Summary — Per-camera pricing breakdown on demand</li>
         </ul>
       </div>
     </div>
   </div>
 
-  <!-- Development Blogs -->
   <div class="accordion-item">
-    <div class="accordion-header" onclick="toggleAccordion(3, event)">
-      <span>📝 Expedition Log</span>
-      <span class="accordion-icon">▼</span>
-    </div>
+    <div class="accordion-header" onclick="toggleAccordion(3,event)"><span>📝 Expedition Log</span><span class="accordion-icon">▼</span></div>
     <div class="accordion-content">
       <div class="articles-dropdown">
-        <!-- Saksham -->
         <button class="articles-btn" onclick="toggleArticles(event)">👤 Saksham</button>
         <div class="article-links">
           <a href="https://sakshamsharma880460.substack.com/p/the-very-first-step" target="_blank">Week 1</a>
@@ -629,9 +148,9 @@ footer::before {
           <a href="https://sakshamsharma880460.substack.com/p/week-3-functional-prototype-to-structured" target="_blank">Week 3</a>
           <a href="https://sakshamsharma880460.substack.com/p/from-a-static-cube-to-an-interactive" target="_blank">Week 4</a>
           <a href="https://sakshamsharma880460.substack.com/p/week-5-from-gestures-to-gimbal" target="_blank">Week 5</a>
+          <a href="#" target="_blank" style="opacity:.45">Week 6 — coming soon</a>
         </div>
 
-        <!-- Daivik -->
         <button class="articles-btn" onclick="toggleArticles(event)">👤 Daivik</button>
         <div class="article-links">
           <a href="https://daivikpathak.substack.com/p/vr-based-geometric-transformation" target="_blank">Week 1</a>
@@ -639,9 +158,9 @@ footer::before {
           <a href="https://substack.com/@daivikpathak/note/c-219406407" target="_blank">Week 3</a>
           <a href="https://substack.com/@daivikpathak/note/c-235436052" target="_blank">Week 4</a>
           <a href="https://substack.com/@daivikpathak/note/c-250313051" target="_blank">Week 5</a>
+          <a href="#" target="_blank" style="opacity:.45">Week 6 — coming soon</a>
         </div>
 
-        <!-- Shourya -->
         <button class="articles-btn" onclick="toggleArticles(event)">👤 Shourya</button>
         <div class="article-links">
           <a href="https://shouryakapoor.substack.com/p/avr-project" target="_blank">Week 1</a>
@@ -649,36 +168,25 @@ footer::before {
           <a href="https://substack.com/@shouryakapoor/note/c-219415815" target="_blank">Week 3</a>
           <a href="https://substack.com/@shouryakapoor/note/c-235379634?r=7hs6ir" target="_blank">Week 4</a>
           <a href="https://substack.com/@shouryakapoor/note/c-250380291" target="_blank">Week 5</a>
+          <a href="#" target="_blank" style="opacity:.45">Week 6 — coming soon</a>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Future Scope -->
   <div class="accordion-item">
-    <div class="accordion-header" onclick="toggleAccordion(4, event)">
-      <span>🌌 Beyond</span>
-      <span class="accordion-icon">▼</span>
-    </div>
+    <div class="accordion-header" onclick="toggleAccordion(4,event)"><span>🌌 Beyond</span><span class="accordion-icon">▼</span></div>
     <div class="accordion-content">
-      <div class="accordion-text">
-        Object recognition. Real-world geometry extraction. AR-powered mathematics where your environment becomes the equation. The boundary between digital and physical dissolves.
-      </div>
+      <div class="accordion-text">Object recognition. Real-world geometry extraction. AR-powered mathematics where your environment becomes the equation. The boundary between digital and physical dissolves.</div>
     </div>
   </div>
 
-  <!-- Repository -->
   <div class="accordion-item">
-    <div class="accordion-header" onclick="toggleAccordion(5, event)">
-      <span>💻 Source</span>
-      <span class="accordion-icon">▼</span>
-    </div>
+    <div class="accordion-header" onclick="toggleAccordion(5,event)"><span>💻 Source</span><span class="accordion-icon">▼</span></div>
     <div class="accordion-content">
-      <div class="accordion-text">
-        All source code, documentation, and development notes.
-      </div>
-      <div style="padding: 0 25px;">
-        <a class="button" href="https://github.com/Saksham-Mist/AR-VR-Project-Team_Rankers" target="_blank">Explore Code →</a>
+      <div class="accordion-text">All source code, documentation, and development notes.</div>
+      <div style="padding:0 25px">
+        <a class="button btn-gh" href="https://github.com/Saksham-Mist/AR-VR-Project-Team_Rankers" target="_blank">Explore Code →</a>
       </div>
     </div>
   </div>
@@ -687,104 +195,185 @@ footer::before {
 <!-- MAIN CONTENT -->
 <div class="main-content">
 
-  <!-- Overview -->
-  <div class="content-section active">
-    <h1>✦ 3D Geometric Transformation Visualizer ✦</h1>
-    <p>
-      Mathematics has always lived in the abstract. Transformations, matrices, eigenvectors—they exist as pure numbers on a page. But what if they had a face? A voice? A dance?
-    </p>
-    <p>
-      This is an interactive AR/VR environment where abstract mathematical concepts transcend the textbook and become intuitive visual experiences. Drag a cube, watch it rotate in real-time. Pinch your fingers, see the scale change. Tilt your phone, witness geometric transformations unfold in your physical space.
-    </p>
-    
-    <h2>The Journey</h2>
-    <p>
-      What began as a simple three-dimensional cube evolved into a dynamic platform supporting:
-    </p>
-    <ul>
-      <li>Five Platonic solids (cube, tetrahedron, octahedron, dodecahedron, icosahedron)</li>
-      <li>Real-time transformation matrices (translation, rotation, scaling)</li>
-      <li>Linear algebra decomposition and composition</li>
-      <li>Hand gesture recognition (pinch, grab, swipe)</li>
-      <li>Device gimbal control (accelerometer-based)</li>
-      <li>Augmented reality with Hiro marker detection</li>
-      <li>Coordinate space visualization (model, world, view, clip)</li>
-    </ul>
+  <h1>✦ 3D Geometric Transformation Visualizer ✦</h1>
 
-    <h2>Progress Snapshot</h2>
-    <div class="progress-tracker">
-      <div class="progress-item">
-        <div class="progress-label"><span>Four-Viewport System</span><span>✓ 100%</span></div>
-        <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
-      </div>
-      <div class="progress-item">
-        <div class="progress-label"><span>Cursor & Scroll Control</span><span>✓ 100%</span></div>
-        <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
-      </div>
-      <div class="progress-item">
-        <div class="progress-label"><span>Linear Algebra Suite</span><span>✓ 100%</span></div>
-        <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
-      </div>
-      <div class="progress-item">
-        <div class="progress-label"><span>Gesture Recognition</span><span>✓ 100%</span></div>
-        <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
-      </div>
-      <div class="progress-item">
-        <div class="progress-label"><span>Gimbal Mode</span><span>✓ 100%</span></div>
-        <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
-      </div>
-      <div class="progress-item">
-        <div class="progress-label"><span>AR Integration</span><span>✓ 100%</span></div>
-        <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
-      </div>
+  <!-- LINKS ROW -->
+  <div style="margin-bottom:32px;display:flex;flex-wrap:wrap;gap:4px">
+    <a class="button" href="https://graphics-pipeline-visualiser.netlify.app/" target="_blank">🌐 Live Demo →</a>
+    <a class="button btn-yt" href="YOUR_YOUTUBE_LINK_HERE" target="_blank">▶ Watch Demo</a>
+    <a class="button btn-gh" href="https://github.com/Saksham-Mist/AR-VR-Project-Team_Rankers" target="_blank">⌥ GitHub →</a>
+  </div>
+
+  <!-- ABSTRACT -->
+  <h2>Abstract</h2>
+  <div class="placeholder">
+    <strong>[ Abstract — ~200 words ]</strong><br>
+    Summarise what the project is, the core problem it addresses, the approach taken, and the outcome. Write in third person, academic tone.
+  </div>
+
+  <!-- PROBLEM STATEMENT -->
+  <h2>Problem Statement</h2>
+  <div class="placeholder">
+    <strong>[ Problem Statement — ~150 words ]</strong><br>
+    Describe where you started: what gap existed in existing 3D/AR/VR geometry education tools, what was missing or inadequate, and why this needed to be built. Reference the original motivation.
+  </div>
+
+  <!-- METHODOLOGIES -->
+  <h2>Methodologies</h2>
+  <div class="placeholder">
+    <strong>[ Methodologies — ~150 words ]</strong><br>
+    Describe the technical approaches used: Three.js for rendering, MediaPipe for hand tracking, AR.js/Hiro for AR, device orientation API for gimbal. Explain how they were integrated and why each was chosen.
+  </div>
+
+  <!-- EXPERIMENTATION -->
+  <h2>Experimentation & Constraints</h2>
+  <div class="placeholder">
+    <strong>[ Experimentation — ~150 words ]</strong><br>
+    List the constraints encountered with each methodology. E.g. gesture latency, gimbal drift on certain devices, Hiro marker detection range, performance on mobile, cross-browser issues. One short paragraph per mode works well.
+  </div>
+
+  <!-- RESULTS & COMPARISONS -->
+  <h2>Results & Comparisons</h2>
+  <div class="placeholder">
+    <strong>[ Results & Comparisons — up to 300 words ]</strong><br>
+    Compare all experiments/modes against each other. What worked best for what use case? Include any metrics (frame rate, recognition accuracy, latency). A table is encouraged — replace or supplement the placeholder below.
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Mode</th>
+          <th>Ease of Use</th>
+          <th>Performance</th>
+          <th>Mobile</th>
+          <th>Key Constraint</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Keyboard</td>
+          <td class="check">✓</td>
+          <td class="check">✓</td>
+          <td class="cross">✗</td>
+          <td>No touch/gesture input</td>
+        </tr>
+        <tr>
+          <td>Gesture (MediaPipe)</td>
+          <td>Medium</td>
+          <td>Medium</td>
+          <td class="check">✓</td>
+          <td>Webcam required, latency</td>
+        </tr>
+        <tr>
+          <td>Gimbal</td>
+          <td class="check">✓</td>
+          <td class="check">✓</td>
+          <td class="check">✓</td>
+          <td>Sensor drift on some devices</td>
+        </tr>
+        <tr>
+          <td>Hiro AR</td>
+          <td>Medium</td>
+          <td>Medium</td>
+          <td class="check">✓</td>
+          <td>Marker + lighting dependent</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="placeholder" style="margin-top:8px">
+    <strong>[ Add your own result observations above or replace table values with actual data ]</strong>
+  </div>
+
+  <!-- DEMONSTRATION VIDEO -->
+  <h2>Demonstration</h2>
+  <div class="video-wrap">
+    <!-- Replace src with your YouTube embed URL: https://www.youtube.com/embed/YOUR_VIDEO_ID -->
+    <!-- <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" allowfullscreen></iframe> -->
+    <div class="video-placeholder">
+      <span>▶</span>
+      <strong>YouTube demo coming soon</strong>
+      <span style="font-size:13px">Replace the commented iframe above with your embed URL</span>
     </div>
   </div>
 
-  <footer>
-    ◆ Crafted by Team Rankers | AR/VR Transformation Research ◆
-  </footer>
-</div>
+  <!-- CONCLUSION & FUTURE SCOPE -->
+  <h2>Conclusion & Future Scope</h2>
+  <h3>Conclusion</h3>
+  <div class="placeholder">
+    <strong>[ Conclusion — 50–100 words ]</strong><br>
+    What was achieved, what it proves, and what it means for learning/teaching geometry through AR/VR.
+  </div>
 
+  <h3>Near-Term Future</h3>
+  <div class="placeholder">
+    <strong>[ Near-Term — ~50 words ]</strong><br>
+    E.g. performance optimisations, additional solids, smoother gesture tracking, better mobile support.
+  </div>
+
+  <h3>Distant Future</h3>
+  <div class="placeholder">
+    <strong>[ Distant Future — ~50 words ]</strong><br>
+    E.g. object recognition, real-world geometry extraction, LLM-guided exploration, multi-user collaborative AR sessions.
+  </div>
+
+  <!-- ORIGINAL OVERVIEW SECTION (preserved) -->
+  <h2>The Journey</h2>
+  <p>What began as a simple three-dimensional cube evolved into a dynamic platform supporting:</p>
+  <ul>
+    <li>Five Platonic solids (cube, tetrahedron, octahedron, dodecahedron, icosahedron)</li>
+    <li>Real-time transformation matrices (translation, rotation, scaling)</li>
+    <li>Linear algebra decomposition and composition</li>
+    <li>Hand gesture recognition (pinch, grab, swipe)</li>
+    <li>Device gimbal control (accelerometer-based)</li>
+    <li>Augmented reality with Hiro marker detection</li>
+    <li>Coordinate space visualization (model, world, view, clip)</li>
+  </ul>
+
+  <h2>Progress Snapshot</h2>
+  <div class="progress-tracker">
+    <div class="progress-item">
+      <div class="progress-label"><span>Four-Viewport System</span><span>✓ 100%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+    </div>
+    <div class="progress-item">
+      <div class="progress-label"><span>Cursor & Scroll Control</span><span>✓ 100%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+    </div>
+    <div class="progress-item">
+      <div class="progress-label"><span>Linear Algebra Suite</span><span>✓ 100%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+    </div>
+    <div class="progress-item">
+      <div class="progress-label"><span>Gesture Recognition</span><span>✓ 100%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+    </div>
+    <div class="progress-item">
+      <div class="progress-label"><span>Gimbal Mode</span><span>✓ 100%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+    </div>
+    <div class="progress-item">
+      <div class="progress-label"><span>AR Integration</span><span>✓ 100%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+    </div>
+  </div>
+
+  <footer>◆ Crafted by Team Rankers | AR/VR Transformation Research ◆</footer>
+</div>
 </div>
 
 <script>
-let activeAccordion = 0;
-
-function toggleAccordion(index, event) {
+let activeAccordion=0;
+function toggleAccordion(index,event){
   event.stopPropagation();
-  
-  const headers = document.querySelectorAll('.accordion-header');
-  const contents = document.querySelectorAll('.accordion-content');
-  
-  if (activeAccordion === index) {
-    // Close if clicking same
-    headers[index].classList.remove('active');
-    contents[index].classList.remove('active');
-    activeAccordion = -1;
-  } else {
-    // Close previous, open new
-    if (activeAccordion !== -1) {
-      headers[activeAccordion].classList.remove('active');
-      contents[activeAccordion].classList.remove('active');
-    }
-    headers[index].classList.add('active');
-    contents[index].classList.add('active');
-    activeAccordion = index;
-  }
+  const headers=document.querySelectorAll('.accordion-header');
+  const contents=document.querySelectorAll('.accordion-content');
+  if(activeAccordion===index){headers[index].classList.remove('active');contents[index].classList.remove('active');activeAccordion=-1;}
+  else{if(activeAccordion!==-1){headers[activeAccordion].classList.remove('active');contents[activeAccordion].classList.remove('active');}headers[index].classList.add('active');contents[index].classList.add('active');activeAccordion=index;}
 }
-
-function toggleArticles(event) {
-  event.stopPropagation();
-  const links = event.target.nextElementSibling;
-  links.classList.toggle('active');
-}
-
-// Open first accordion on load
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('.accordion-header').classList.add('active');
-  document.querySelector('.accordion-content').classList.add('active');
-});
+function toggleArticles(event){event.stopPropagation();event.target.nextElementSibling.classList.toggle('active');}
+document.addEventListener('DOMContentLoaded',()=>{document.querySelector('.accordion-header').classList.add('active');document.querySelector('.accordion-content').classList.add('active');});
 </script>
-
 </body>
 </html>
