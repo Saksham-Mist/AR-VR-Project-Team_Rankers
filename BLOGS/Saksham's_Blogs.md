@@ -7,3 +7,5 @@
 [Week 4 - AR Prototype Culmination](https://sakshamsharma880460.substack.com/p/from-a-static-cube-to-an-interactive)
 
 [Week 5 - From gesture to gimbal](https://sakshamsharma880460.substack.com/p/week-5-from-gestures-to-gimbal)
+
+[Week 6 - From Cubes to Cameras](https://sakshamsharma880460.substack.com/p/from-cubes-to-cameras-how-our-project)
